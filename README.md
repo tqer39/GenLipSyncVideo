@@ -15,7 +15,7 @@ bash ./setup
 
 ```bash
 deactivate
-source ../venv/bin/activate
+source .venv/bin/activate
 # separate.py の使い方
 ```
 
