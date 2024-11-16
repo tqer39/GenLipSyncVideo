@@ -16,7 +16,6 @@ bash ./setup
 ```bash
 deactivate
 source .venv/bin/activate
-# separate.py の使い方
 ```
 
 #### 引数の説明
