@@ -66,7 +66,7 @@ python "$HOME/workspace/GenLipSyncVideo/scripts/separate.py" \
 
 ```bash
 deactivate
-source ../venv/bin/activate
+source .venv/bin/activate
 ```
 
 #### 引数の説明
