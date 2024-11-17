@@ -2,11 +2,11 @@
 
 set -ex  # エラー時に即終了
 
-# メッセージ出力関数の定義（絵文字を手前に配置）
-function echo_success() { echo -e "\033[32m🎉 [SUCCESS] $1\033[0m"; }  # 緑色（成功や進行中）
-function echo_warning() { echo -e "\033[33m⚠️ [WARNING] $1\033[0m"; } # 黄色（注意や警告）
-function echo_error() { echo -e "\033[31m❌ [ERROR] $1\033[0m"; }    # 赤色（エラー）
-function echo_info() { echo -e "\033[34mℹ️ [INFO] $1\033[0m"; }      # 青色（完了や情報）
+# メッセージ出力関数
+function echo_success() { echo -e "\033[32m🎉 [SUCCESS] $1\033[0m"; }
+function echo_warning() { echo -e "\033[33m⚠️ [WARNING] $1\033[0m"; }
+function echo_error() { echo -e "\033[31m❌ [ERROR] $1\033[0m"; }
+function echo_info() { echo -e "\033[34mℹ️ [INFO] $1\033[0m"; }
 
 # デフォルトの作業ディレクトリ
 DEFAULT_WORKSPACE="$HOME/workspace"
@@ -54,8 +54,8 @@ fi
 
 # シンボリックリンク作成
 for file in "${SYMLINK_FILES[@]}"; do
-    SRC="$FISH_SPEECH_DIR/$file"
-    DEST="$DEFAULT_WORKSPACE/GenLipSyncVideo/$file"
+    SRC="$DEFAULT_WORKSPACE/GenLipSyncVideo/$file"
+    DEST="$FISH_SPEECH_DIR/$file"
     if [ -f "$SRC" ]; then
         echo_success "シンボリックリンクを作成中: $SRC → $DEST"
         ln -sf "$SRC" "$DEST"
