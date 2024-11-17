@@ -16,6 +16,7 @@ def create_and_copy_data(
     Args:
         model_name (str): モデル名。`./data/raw/model_name` 内でディレクトリを構成します。
         input_raw_directory (str): コピー先のサブディレクトリ名。
+                                   `--copy-source-raw-directory` が指定されている場合にのみ、データのコピー先となります。
         copy_source_raw_directory (Optional[str]): コピー元のサブディレクトリ名。
     """
     # ベースディレクトリの設定
@@ -52,13 +53,19 @@ def main():
     parser.add_argument(
         "--copy-source-raw-directory",
         type=str,
-        help="コピー元のフォルダ名（オプション）。`./data/raw/model_name` 内のフォルダ名を指定します。",
+        help=(
+            "コピー元のフォルダ名（オプション）。"
+            "`./data/raw/model_name` 内のフォルダ名を指定します。このオプションが指定されている場合のみデータをコピーします。"
+        ),
     )
     parser.add_argument(
         "--input-raw-directory",
         type=str,
         required=True,
-        help="コピー先のサブディレクトリ名。`./data/raw/model_name` 内に作成されます。",
+        help=(
+            "サブディレクトリ名を指定します。`./data/raw/model_name` 内に作成されます。"
+            "`--copy-source-raw-directory` が指定されている場合、このディレクトリにデータがコピーされます。"
+        ),
     )
     parser.add_argument(
         "model_name",
