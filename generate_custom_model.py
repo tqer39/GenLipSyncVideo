@@ -65,8 +65,8 @@ def split_audio_files(
     separate_dir = base_path / "separate"
     separate_dir.mkdir(parents=True, exist_ok=True)
 
-    # 音声ファイルの処理
-    for audio_file in base_path.glob("*.wav"):
+    # 音声ファイルの処理（ファイル名で昇順ソート）
+    for audio_file in sorted(base_path.glob("*.wav")):
         print(f"処理中のファイル: {audio_file}")
         duration = start
         file_counter = 1
@@ -87,7 +87,7 @@ def split_audio_files(
                     "ffmpeg",
                     "-y",
                     "-i",
-                    str(audio_file),  # -y オプションを追加して上書きを許可
+                    str(audio_file),
                     "-ss",
                     str(duration),
                     "-t",
