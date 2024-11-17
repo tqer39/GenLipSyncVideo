@@ -14,7 +14,10 @@ FISH_SPEECH_DIR="$DEFAULT_WORKSPACE/fish-speech"
 FS_REPO_URL="https://github.com/your-repo/fish-speech.git"  # fish-speech のリポジトリURLを記載してください
 
 # シンボリックリンク作成対象のファイル名リスト
-SYMLINK_FILES=("setup")
+SYMLINK_FILES=(
+  "setup"
+  "generate_custom_model.py"
+)
 
 # 引数処理
 while [[ $# -gt 0 ]]; do
