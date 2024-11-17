@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import Optional
 import shutil
 import subprocess
-import re
 
 
 def get_audio_duration(file_path: Path) -> int:
@@ -17,7 +16,17 @@ def get_audio_duration(file_path: Path) -> int:
         int: 音声ファイルの長さ（秒単位）。
     """
     result = subprocess.run(
-        ["ffprobe", "-i", str(file_path), "-show_entries", "format=duration", "-v", "quiet", "-of", "csv=p=0"],
+        [
+            "ffprobe",
+            "-i",
+            str(file_path),
+            "-show_entries",
+            "format=duration",
+            "-v",
+            "quiet",
+            "-of",
+            "csv=p=0",
+        ],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
@@ -26,46 +35,53 @@ def get_audio_duration(file_path: Path) -> int:
     return int(float(duration)) if duration else 0
 
 
-def create_and_copy_data(
-    model_name: str,
-    copy_source_raw_directory: Optional[str] = None,
-    force: bool = False,
-) -> None:
+def clean_audio(file_path: Path, output_path: Path) -> None:
     """
-    ディレクトリを作成し、必要に応じてデータをコピーします。
+    fap を使用して音声データをクリーンアップします。
 
     Args:
-        model_name (str): コピー先のサブディレクトリ名。
-                          `./data/raw/model_name` 内に作成されます。
-        copy_source_raw_directory (Optional[str]): コピー元ディレクトリのパス（相対パスまたは絶対パス）。
-        force (bool): 同名ファイルが存在する場合に上書きするか。
+        file_path (Path): 元の音声データファイル。
+        output_path (Path): クリーンアップされた音声データの保存先。
     """
-    base_path = Path("./data/raw/model_name")
-    destination_path = base_path / model_name
+    cmd = ["fap", "clean", str(file_path), "-o", str(output_path)]
+    subprocess.run(cmd, check=True)
+    print(f"クリーンアップされた音声データを生成しました: {output_path}")
 
-    # 必要なディレクトリを作成
-    destination_path.mkdir(parents=True, exist_ok=True)
-    print(f"ディレクトリを作成しました: {destination_path}")
 
-    if copy_source_raw_directory:
-        source_path = Path(copy_source_raw_directory)
+def generate_text(file_path: Path) -> Path:
+    """
+    音声データからテキストデータを生成します。
 
-        if not source_path.exists():
-            raise FileNotFoundError(
-                f"コピー元ディレクトリが存在しません: {source_path}"
-            )
+    Args:
+        file_path (Path): 音声データファイルのパス。
 
-        for item in source_path.iterdir():
-            destination = destination_path / item.name
-            if destination.exists() and not force:
-                print(f"スキップ: ファイルが既に存在します: {destination}")
-                continue
+    Returns:
+        Path: 生成されたテキストデータファイルのパス。
+    """
+    text_file = file_path.with_suffix(".txt")
+    cmd = ["fap", "transcribe", str(file_path), "-o", str(text_file)]
+    subprocess.run(cmd, check=True)
+    print(f"テキストデータを生成しました: {text_file}")
+    return text_file
 
-            if item.is_dir():
-                shutil.copytree(item, destination, dirs_exist_ok=force)
-            else:
-                shutil.copy2(item, destination)
-        print(f"{source_path} の内容を {destination_path} にコピーしました")
+
+def validate_generated_text(file_path: Path) -> bool:
+    """
+    生成されたテキストデータの内容を確認します。
+
+    Args:
+        file_path (Path): テキストデータファイルのパス。
+
+    Returns:
+        bool: テキストデータが正しい場合は True、問題がある場合は False。
+    """
+    with file_path.open("r", encoding="utf-8") as f:
+        content = f.read()
+        if not content.strip():  # 空のテキストデータは無効とみなす
+            print(f"警告: テキストデータが空です: {file_path}")
+            return False
+    print(f"テキストデータは有効です: {file_path}")
+    return True
 
 
 def split_audio_files(
@@ -125,6 +141,19 @@ def split_audio_files(
                 subprocess.run(cmd, check=True)
                 print(f"生成されたファイル: {output_file}")
 
+                # 音声をクリーンアップ
+                cleaned_file = output_file.with_name(f"cleaned_{output_file.name}")
+                clean_audio(output_file, cleaned_file)
+
+                # テキストデータを生成
+                text_file = generate_text(cleaned_file)
+
+                # テキストデータの確認
+                if not validate_generated_text(text_file):
+                    print(
+                        f"エラー: テキストデータが無効です。再生成が必要です: {text_file}"
+                    )
+
             file_counter += 1
             duration += term - overlay
 
@@ -135,11 +164,6 @@ def main():
     """
     parser = argparse.ArgumentParser(
         description="カスタムモデルのデータ構造を生成し、音声データを分割します。"
-    )
-    parser.add_argument(
-        "--copy-source-raw-directory",
-        type=str,
-        help="コピー元のディレクトリパス（相対パスまたは絶対パス）。指定されている場合のみデータをコピーします。",
     )
     parser.add_argument(
         "--model-name",
@@ -174,14 +198,6 @@ def main():
     args = parser.parse_args()
 
     try:
-        # ディレクトリ作成とデータコピーを実行
-        if args.copy_source_raw_directory:
-            create_and_copy_data(
-                model_name=args.model_name,
-                copy_source_raw_directory=args.copy_source_raw_directory,
-                force=args.force,
-            )
-
         # 音声分割を実行
         split_audio_files(
             model_name=args.model_name,
