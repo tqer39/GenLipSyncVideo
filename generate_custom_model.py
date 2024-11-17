@@ -126,7 +126,12 @@ def split_audio_files(
         file_counter = 1
 
         # 元の音声ファイルの長さを取得
-        audio_duration = get_audio_duration(audio_file)
+        try:
+            audio_duration = get_audio_duration(audio_file)
+            print(f"音声ファイルの長さ: {audio_duration} 秒")
+        except Exception as e:
+            print(f"エラー: 音声ファイルの長さ取得に失敗しました: {audio_file}, {e}")
+            continue
 
         while duration < audio_duration:
             output_filename = (
@@ -137,12 +142,15 @@ def split_audio_files(
             output_file = separate_dir / output_filename
 
             if not force and output_file.exists():
-                continue  # ログを減らすため省略
+                print(f"スキップ: ファイルが既に存在します: {output_file}")
+                file_counter += 1
+                duration += term - overlay
+                continue
 
             # ffmpeg を使用して分割
             cmd = [
                 "ffmpeg",
-                "-y",
+                "-y",  # 上書きを許可
                 "-i",
                 str(audio_file),
                 "-ss",
@@ -151,24 +159,17 @@ def split_audio_files(
                 str(term),
                 str(output_file),
             ]
+            print(f"実行コマンド: {' '.join(cmd)}")
+
             try:
-                subprocess.run(cmd, check=True)
+                subprocess.run(cmd, check=True, timeout=60)  # タイムアウトを60秒に設定
                 print(f"生成されたファイル: {output_file}")
+            except subprocess.TimeoutExpired:
+                print(f"エラー: タイムアウトしました: {audio_file} の分割処理")
+                break
             except subprocess.CalledProcessError as e:
-                print(f"エラー: 音声分割に失敗しました: {output_file}, {e}")
-                raise
-
-            # 音声をクリーンアップ
-            cleaned_file = clean_audio(output_file, separate_dir)
-
-            # テキストデータを生成
-            text_file = generate_text(cleaned_file, separate_dir)
-
-            # テキストデータの確認
-            if not validate_generated_text(text_file):
-                print(
-                    f"エラー: テキストデータが無効です。再生成が必要です: {text_file}"
-                )
+                print(f"エラー: ffmpeg の実行に失敗しました: {e}")
+                break
 
             file_counter += 1
             duration += term - overlay
