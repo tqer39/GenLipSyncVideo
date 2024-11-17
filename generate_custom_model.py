@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
-from typing import Optional
 import subprocess
+import whisper
 
 
 def get_audio_duration(file_path: Path) -> int:
@@ -34,31 +34,9 @@ def get_audio_duration(file_path: Path) -> int:
     return int(float(duration)) if duration else 0
 
 
-def clean_audio(file_path: Path, output_dir: Path) -> Path:
+def transcribe_with_whisper(file_path: Path, output_dir: Path) -> Path:
     """
-    fap を使用して音声データをクリーンアップします。
-
-    Args:
-        file_path (Path): 元の音声データファイル。
-        output_dir (Path): クリーンアップされた音声データの保存先ディレクトリ。
-
-    Returns:
-        Path: クリーンアップされた音声データのパス。
-    """
-    output_path = output_dir / f"cleaned_{file_path.name}"
-    cmd = ["fap", "clean", str(file_path), "-o", str(output_path)]
-    try:
-        subprocess.run(cmd, check=True)
-        print(f"クリーンアップされた音声データを生成しました: {output_path}")
-    except subprocess.CalledProcessError as e:
-        print(f"エラー: 音声のクリーンアップに失敗しました: {file_path}, {e}")
-        raise
-    return output_path
-
-
-def generate_text(file_path: Path, output_dir: Path) -> Path:
-    """
-    音声データからテキストデータを生成します。
+    OpenAI Whisper を使用して音声ファイルを文字起こしします。
 
     Args:
         file_path (Path): 音声データファイルのパス。
@@ -68,36 +46,18 @@ def generate_text(file_path: Path, output_dir: Path) -> Path:
         Path: 生成されたテキストデータファイルのパス（.lab）。
     """
     text_file = output_dir / f"{file_path.stem}.lab"
-    cmd = ["fap", "transcribe", str(file_path), "-o", str(text_file)]
-    print(f"テキスト生成コマンド: {' '.join(cmd)}")
-    try:
-        result = subprocess.run(cmd, check=True, text=True, capture_output=True)
-        print(f"fap transcribe 出力: {result.stdout}")
-        print(f"テキストデータ（.lab）を生成しました: {text_file}")
-    except subprocess.CalledProcessError as e:
-        print(f"エラー: テキストデータの生成に失敗しました: {file_path}")
-        print(f"エラー詳細: {e.stderr}")
-        raise
+    print(f"Whisper で文字起こし中: {file_path}")
+    model = whisper.load_model(
+        "base"
+    )  # 必要に応じて "tiny", "small", "medium", "large" を選択
+    result = model.transcribe(str(file_path))
+    text_content = result["text"]
+
+    # テキストを保存
+    with text_file.open("w", encoding="utf-8") as f:
+        f.write(text_content)
+    print(f"テキストデータ（.lab）を生成しました: {text_file}")
     return text_file
-
-
-def validate_generated_text(file_path: Path) -> bool:
-    """
-    生成されたテキストデータの内容を確認します。
-
-    Args:
-        file_path (Path): テキストデータファイルのパス。
-
-    Returns:
-        bool: テキストデータが正しい場合は True、問題がある場合は False。
-    """
-    with file_path.open("r", encoding="utf-8") as f:
-        content = f.read()
-        if not content.strip():  # 空のテキストデータは無効とみなす
-            print(f"警告: テキストデータが空です: {file_path}")
-            return False
-    print(f"テキストデータは有効です: {file_path}")
-    return True
 
 
 def split_audio_files(
@@ -129,18 +89,14 @@ def split_audio_files(
         file_counter = 1
 
         # 元の音声ファイルの長さを取得
-        try:
-            audio_duration = get_audio_duration(audio_file)
-            print(f"音声ファイルの長さ: {audio_duration} 秒")
-        except Exception as e:
-            print(f"エラー: 音声ファイルの長さ取得に失敗しました: {audio_file}, {e}")
-            continue
+        audio_duration = get_audio_duration(audio_file)
+        print(f"音声ファイルの長さ: {audio_duration} 秒")
 
         while duration < audio_duration:
             output_filename = (
                 f"{audio_file.stem}_{duration // 3600:02d}-{(duration % 3600) // 60:02d}-{duration % 60:02d}"
                 f"-{(duration + term) // 3600:02d}-{((duration + term) % 3600) // 60:02d}-{(duration + term) % 60:02d}"
-                f"_{file_counter:05d}{audio_file.suffix}"
+                f"_{file_counter:05d}.wav"
             )
             output_file = separate_dir / output_filename
 
@@ -172,6 +128,13 @@ def split_audio_files(
                 break
             except subprocess.CalledProcessError as e:
                 print(f"エラー: ffmpeg の実行に失敗しました: {e}")
+                break
+
+            # Whisper を使用して文字起こし
+            try:
+                transcribe_with_whisper(output_file, separate_dir)
+            except Exception as e:
+                print(f"エラー: Whisper での文字起こしに失敗しました: {e}")
                 break
 
             file_counter += 1
