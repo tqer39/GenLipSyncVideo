@@ -8,7 +8,7 @@ import subprocess
 def create_and_copy_data(
     model_name: str,
     copy_source_raw_directory: Optional[str] = None,
-    force: bool = False
+    force: bool = False,
 ) -> None:
     """
     ディレクトリを作成し、必要に応じてデータをコピーします。
@@ -30,7 +30,9 @@ def create_and_copy_data(
         source_path = Path(copy_source_raw_directory)
 
         if not source_path.exists():
-            raise FileNotFoundError(f"コピー元ディレクトリが存在しません: {source_path}")
+            raise FileNotFoundError(
+                f"コピー元ディレクトリが存在しません: {source_path}"
+            )
 
         for item in source_path.iterdir():
             destination = destination_path / item.name
@@ -46,11 +48,7 @@ def create_and_copy_data(
 
 
 def split_audio_files(
-    model_name: str,
-    start: int,
-    term: int,
-    overlay: int,
-    force: bool = False
+    model_name: str, start: int, term: int, overlay: int, force: bool = False
 ) -> None:
     """
     音声データを指定の条件で分割し、保存します。
@@ -74,9 +72,11 @@ def split_audio_files(
         file_counter = 1
 
         while True:
-            output_filename = f"{audio_file.stem}_{duration // 3600:02d}-{(duration % 3600) // 60:02d}-{duration % 60:02d}" \
-                              f"-{(duration + term) // 3600:02d}-{((duration + term) % 3600) // 60:02d}-{(duration + term) % 60:02d}" \
-                              f"_{file_counter:05d}{audio_file.suffix}"
+            output_filename = (
+                f"{audio_file.stem}_{duration // 3600:02d}-{(duration % 3600) // 60:02d}-{duration % 60:02d}"
+                f"-{(duration + term) // 3600:02d}-{((duration + term) % 3600) // 60:02d}-{(duration + term) % 60:02d}"
+                f"_{file_counter:05d}{audio_file.suffix}"
+            )
             output_file = separate_dir / output_filename
 
             if not force and output_file.exists():
@@ -84,9 +84,15 @@ def split_audio_files(
             else:
                 # ffmpeg を使用して分割
                 cmd = [
-                    "ffmpeg", "-i", str(audio_file),
-                    "-ss", str(duration), "-t", str(term),
-                    str(output_file)
+                    "ffmpeg",
+                    "-y",
+                    "-i",
+                    str(audio_file),  # -y オプションを追加して上書きを許可
+                    "-ss",
+                    str(duration),
+                    "-t",
+                    str(term),
+                    str(output_file),
                 ]
                 subprocess.run(cmd, check=True)
                 print(f"生成されたファイル: {output_file}")
@@ -103,7 +109,9 @@ def main():
     """
     引数を受け取り、データディレクトリの作成とコピー処理、音声分割を実行します。
     """
-    parser = argparse.ArgumentParser(description="カスタムモデルのデータ構造を生成し、音声データを分割します。")
+    parser = argparse.ArgumentParser(
+        description="カスタムモデルのデータ構造を生成し、音声データを分割します。"
+    )
     parser.add_argument(
         "--copy-source-raw-directory",
         type=str,
