@@ -8,6 +8,32 @@ function echo_warning() { echo -e "\033[33m⚠️ [WARNING] $1\033[0m"; }
 function echo_error() { echo -e "\033[31m❌ [ERROR] $1\033[0m"; }
 function echo_info() { echo -e "\033[34mℹ️ [INFO] $1\033[0m"; }
 
+# デフォルト設定
+DEFAULT_DIR=$(pwd)
+MODEL_DIR="checkpoints/fish-speech-1.4"
+
+# 引数処理
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --directory)
+            if [ -n "$2" ]; then
+                DEFAULT_DIR="$2"
+                shift 2
+            else
+                echo_error "--directory オプションにはパスを指定してください。"
+                exit 1
+            fi
+            ;;
+        *)
+            echo_error "不明なオプション: $1"
+            exit 1
+            ;;
+    esac
+done
+
+# 作業ディレクトリの設定
+cd "$DEFAULT_DIR" || { echo_error "ディレクトリに移動できません: $DEFAULT_DIR"; exit 1; }
+
 # 必要なライブラリのインストール
 echo_info "Ubuntu の必要なパッケージをインストール中..."
 sudo apt update
@@ -70,7 +96,12 @@ fi
 # uv 仮想環境のセットアップ
 echo_info "uv 仮想環境をセットアップ中..."
 PYTHON_VERSION=3.10.0
-uv venv --python "$PYTHON_VERSION"
+if [ ! -d ".venv" ]; then
+    echo_info "uv 仮想環境を作成中..."
+    uv venv --python "$PYTHON_VERSION"
+else
+    echo_success "既存の uv 仮想環境を検出しました。"
+fi
 # shellcheck source=/dev/null
 source ".venv/bin/activate"
 
@@ -92,11 +123,19 @@ fi
 
 # モデルのダウンロード
 echo_info "Hugging Face CLI でモデルをダウンロード中..."
-huggingface-cli download fishaudio/fish-speech-1.4 --local-dir checkpoints/fish-speech-1.4
+mkdir -p "$MODEL_DIR"
+huggingface-cli download fishaudio/fish-speech-1.4 --local-dir "$MODEL_DIR"
 
 # uv で必要なライブラリをインストール
 echo_info "uv でライブラリをインストール中..."
 uv add --dev --python "$PYTHON_VERSION" torch==2.4.1 torchvision==0.19.1 torchaudio==2.4.1
+
+# セットアップ環境の確認
+echo_info "セットアップ環境の確認:"
+echo_info "Python バージョン: $(python -V)"
+echo_info "pip バージョン: $(pip -V)"
+echo_info "インストールされたライブラリ:"
+pip list | grep -E "torch|torchvision|torchaudio"
 
 # 完了メッセージ
 echo_success "すべてのセットアップが完了しました！"
