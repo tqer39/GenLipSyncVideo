@@ -48,20 +48,21 @@ def clean_audio(file_path: Path, output_path: Path) -> None:
     print(f"クリーンアップされた音声データを生成しました: {output_path}")
 
 
-def generate_text(file_path: Path) -> Path:
+def generate_text(file_path: Path, output_dir: Path) -> Path:
     """
     音声データからテキストデータを生成します。
 
     Args:
         file_path (Path): 音声データファイルのパス。
+        output_dir (Path): テキストデータの保存先ディレクトリ。
 
     Returns:
-        Path: 生成されたテキストデータファイルのパス。
+        Path: 生成されたテキストデータファイルのパス（.lab）。
     """
-    text_file = file_path.with_suffix(".txt")
+    text_file = output_dir / f"{file_path.stem}.lab"
     cmd = ["fap", "transcribe", str(file_path), "-o", str(text_file)]
     subprocess.run(cmd, check=True)
-    print(f"テキストデータを生成しました: {text_file}")
+    print(f"テキストデータ（.lab）を生成しました: {text_file}")
     return text_file
 
 
