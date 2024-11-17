@@ -8,8 +8,7 @@
     ".gitignore"
   ],
   "words": [
-    "0",
-    "42",
+    "anyenv",
     "esac",
     "fishaudio",
     "huggingface",
@@ -18,10 +17,12 @@
     "libportaudio",
     "libportaudiocpp",
     "libsox",
+    "linuxbrew",
     "portaudio",
     "pydub",
     "pyenv",
     "shellcheck",
+    "shellenv",
     "SSIA",
     "torchaudio",
     "torchvision",
