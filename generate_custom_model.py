@@ -3,6 +3,27 @@ from pathlib import Path
 from typing import Optional
 import shutil
 import subprocess
+import re
+
+
+def get_audio_duration(file_path: Path) -> int:
+    """
+    ffmpeg を使用して音声ファイルの長さを取得します。
+
+    Args:
+        file_path (Path): 音声ファイルのパス。
+
+    Returns:
+        int: 音声ファイルの長さ（秒単位）。
+    """
+    result = subprocess.run(
+        ["ffprobe", "-i", str(file_path), "-show_entries", "format=duration", "-v", "quiet", "-of", "csv=p=0"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    duration = result.stdout.strip()
+    return int(float(duration)) if duration else 0
 
 
 def create_and_copy_data(
@@ -75,7 +96,10 @@ def split_audio_files(
         duration = start
         file_counter = 1
 
-        while True:
+        # 元の音声ファイルの長さを取得
+        audio_duration = get_audio_duration(audio_file)
+
+        while duration < audio_duration:
             output_filename = (
                 f"{audio_file.stem}_{duration // 3600:02d}-{(duration % 3600) // 60:02d}-{duration % 60:02d}"
                 f"-{(duration + term) // 3600:02d}-{((duration + term) % 3600) // 60:02d}-{(duration + term) % 60:02d}"
@@ -103,10 +127,6 @@ def split_audio_files(
 
             file_counter += 1
             duration += term - overlay
-
-            # 仮の終了条件（ファイル全体長に応じて調整する必要あり）
-            if duration >= 3600:  # 例: 最大1時間で終了
-                break
 
 
 def main():
