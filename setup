@@ -93,9 +93,6 @@ else
     echo_success "uv は既にインストールされています。"
 fi
 
-# OpenAI のライブラリをインストール
-pip install openai-whisper
-
 # uv 仮想環境のセットアップ
 echo_info "uv 仮想環境をセットアップ中..."
 PYTHON_VERSION=3.10.0
