@@ -7,21 +7,20 @@ from typing import Optional
 
 def create_and_copy_data(
     model_name: str,
-    input_model_name: str,
     copy_source_raw_directory: Optional[str] = None
 ) -> None:
     """
     ディレクトリを作成し、必要に応じてデータをコピーします。
 
     Args:
-        model_name (str): モデル名。`./data/raw/model_name` 内でディレクトリを構成します。
-        input_model_name (str): コピー先のサブディレクトリ名。
-                                `--copy-source-raw-directory` が指定されている場合にのみ、データのコピー先となります。
+        model_name (str): コピー先のサブディレクトリ名。
+                          `./data/raw/model_name` 内に作成されます。
+                          `--copy-source-raw-directory` が指定されている場合にのみ、データのコピー先となります。
         copy_source_raw_directory (Optional[str]): コピー元のサブディレクトリ名。
     """
     # ベースディレクトリの設定
-    base_path = Path(f"./data/raw/{model_name}")
-    destination_path = base_path / input_model_name
+    base_path = Path("./data/raw/model_name")
+    destination_path = base_path / model_name
 
     # 必要なディレクトリを作成
     destination_path.mkdir(parents=True, exist_ok=True)
@@ -67,11 +66,6 @@ def main():
             "`--copy-source-raw-directory` が指定されている場合、このディレクトリにデータがコピーされます。"
         ),
     )
-    parser.add_argument(
-        "model_name",
-        type=str,
-        help="モデル名。`./data/raw/model_name` の構造を設定します。",
-    )
 
     args = parser.parse_args()
 
@@ -79,7 +73,6 @@ def main():
         # ディレクトリ作成とデータコピーを実行
         create_and_copy_data(
             model_name=args.model_name,
-            input_model_name=args.model_name,
             copy_source_raw_directory=args.copy_source_raw_directory,
         )
         print("データ構造の生成が完了しました！")
