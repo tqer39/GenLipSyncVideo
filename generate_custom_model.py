@@ -69,11 +69,14 @@ def generate_text(file_path: Path, output_dir: Path) -> Path:
     """
     text_file = output_dir / f"{file_path.stem}.lab"
     cmd = ["fap", "transcribe", str(file_path), "-o", str(text_file)]
+    print(f"テキスト生成コマンド: {' '.join(cmd)}")
     try:
-        subprocess.run(cmd, check=True)
+        result = subprocess.run(cmd, check=True, text=True, capture_output=True)
+        print(f"fap transcribe 出力: {result.stdout}")
         print(f"テキストデータ（.lab）を生成しました: {text_file}")
     except subprocess.CalledProcessError as e:
-        print(f"エラー: テキストデータの生成に失敗しました: {file_path}, {e}")
+        print(f"エラー: テキストデータの生成に失敗しました: {file_path}")
+        print(f"エラー詳細: {e.stderr}")
         raise
     return text_file
 
