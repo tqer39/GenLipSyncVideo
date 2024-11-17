@@ -139,12 +139,73 @@ def split_audio_files(
             duration += term - overlay
 
 
+def normalize_audio_files(model_name: str, force: bool = False) -> None:
+    """
+    fap loudness-norm を使用して音声データを正規化します。
+
+    Args:
+        model_name (str): モデル名。
+                          `./data/raw/model_name/{model_name}/separate` 配下の音声データを対象とします。
+        force (bool): 既存の正規化済みファイルを上書きするか。
+    """
+    base_path = Path(f"./data/raw/model_name/{model_name}")
+    separate_dir = base_path / "separate"
+    normalized_dir = base_path / "normalized"
+    normalized_dir.mkdir(parents=True, exist_ok=True)
+
+    # 音声ファイルの処理
+    for audio_file in separate_dir.glob("*.wav"):
+        normalized_file = normalized_dir / audio_file.name
+
+        if normalized_file.exists() and not force:
+            print(f"スキップ: ファイルが既に存在します: {normalized_file}")
+            continue
+
+        # fap loudness-norm を使用して正規化
+        cmd = ["fap", "loudness-norm", str(audio_file), "-o", str(normalized_file)]
+        try:
+            subprocess.run(cmd, check=True)
+            print(f"正規化完了: {normalized_file}")
+        except subprocess.CalledProcessError as e:
+            print(f"エラー: 正規化に失敗しました: {audio_file}, {e}")
+
+
+def transcribe_audio_files(model_name: str, force: bool = False) -> None:
+    """
+    音声ファイルを文字起こししてテキストデータを生成します。
+
+    Args:
+        model_name (str): モデル名。
+                          `./data/raw/model_name/{model_name}/separate` 配下の音声データを対象とします。
+        force (bool): 既存のテキストデータを上書きするか。
+    """
+    base_path = Path(f"./data/raw/model_name/{model_name}")
+    separate_dir = base_path / "separate"
+    transcribed_dir = base_path / "transcribed"
+    transcribed_dir.mkdir(parents=True, exist_ok=True)
+
+    # 音声ファイルの処理
+    for audio_file in separate_dir.glob("*.wav"):
+        text_file = transcribed_dir / f"{audio_file.stem}.lab"
+
+        if text_file.exists() and not force:
+            print(f"スキップ: テキストデータが既に存在します: {text_file}")
+            continue
+
+        cmd = ["fap", "transcribe", str(audio_file), "-o", str(text_file)]
+        try:
+            subprocess.run(cmd, check=True)
+            print(f"文字起こし完了: {text_file}")
+        except subprocess.CalledProcessError as e:
+            print(f"エラー: 文字起こしに失敗しました: {audio_file}, {e}")
+
+
 def main():
     """
-    引数を受け取り、データディレクトリの作成とコピー処理、音声分割を実行します。
+    引数を受け取り、データコピー、音声分割、クリーンアップ、文字起こしを順次処理します。
     """
     parser = argparse.ArgumentParser(
-        description="カスタムモデルのデータ構造を生成し、音声データを分割します。"
+        description="カスタムモデルのデータ構造を生成し、音声データを分割・クリーンアップ・文字起こしします。"
     )
     parser.add_argument(
         "--copy-source-raw-directory",
@@ -178,13 +239,22 @@ def main():
     parser.add_argument(
         "--force",
         action="store_true",
-        help="既存のファイルや分割済みファイルを上書きします。",
+        help="既存のファイルやテキストデータを上書きします。",
+    )
+    parser.add_argument(
+        "--split-only",
+        action="store_true",
+        help="音声分割のみ実行します。",
+    )
+    parser.add_argument(
+        "--transcribe-only",
+        action="store_true",
+        help="文字起こしのみ実行します。",
     )
 
     args = parser.parse_args()
 
     try:
-        # ディレクトリ作成とデータコピーを実行
         if args.copy_source_raw_directory:
             create_and_copy_data(
                 model_name=args.model_name,
@@ -192,15 +262,22 @@ def main():
                 force=args.force,
             )
 
-        # 音声分割を実行
-        split_audio_files(
-            model_name=args.model_name,
-            start=args.start,
-            term=args.term,
-            overlay=args.overlay,
-            force=args.force,
-        )
-        print("処理が完了しました！")
+        if not args.transcribe_only:
+            split_audio_files(
+                model_name=args.model_name,
+                start=args.start,
+                term=args.term,
+                overlay=args.overlay,
+                force=args.force,
+            )
+
+        if not args.split_only:
+            transcribe_audio_files(
+                model_name=args.model_name,
+                force=args.force,
+            )
+
+        print("すべての処理が完了しました！")
     except Exception as e:
         print(f"エラーが発生しました: {e}")
 
