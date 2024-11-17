@@ -69,7 +69,8 @@ fi
 
 # uv 仮想環境のセットアップ
 echo_info "uv 仮想環境をセットアップ中..."
-uv venv --python 3.10.0
+PYTHON_VERSION=3.10.0
+uv venv --python "$PYTHON_VERSION"
 # shellcheck source=/dev/null
 source ".venv/bin/activate"
 
@@ -91,74 +92,11 @@ fi
 
 # モデルのダウンロード
 echo_info "Hugging Face CLI でモデルをダウンロード中..."
-huggingface-cli download fishaudio/fish-speech-1.4 --repo-id --revision main
+huggingface-cli download fishaudio/fish-speech-1.4 --local-dir checkpoints/fish-speech-1.4
 
 # uv で必要なライブラリをインストール
 echo_info "uv でライブラリをインストール中..."
-uv add torch==2.4.1 torchvision==0.19.1 torchaudio==2.4.1
-uv add --dev --python 3.10.0
+uv add --dev --python "$PYTHON_VERSION" torch==2.4.1 torchvision==0.19.1 torchaudio==2.4.1
 
 # 完了メッセージ
 echo_success "すべてのセットアップが完了しました！"
-
-# FS_ROOT="$HOME/workspace/fish-speech"
-
-# # 必要なシステムパッケージをインストール
-# sudo apt update
-# sudo apt install -y \
-#     build-essential \
-#     cmake \
-#     clang \
-#     libsox-dev \
-#     ffmpeg \
-#     libasound-dev \
-#     portaudio19-dev \
-#     libportaudio2 \
-#     libportaudiocpp0 \
-#     python3-pip \
-#     python3-venv \
-#     git
-
-# # huggingface_hub をインストール
-# pip install huggingface_hub
-
-# # huggingface-cli がインストールされているか確認
-# if ! command -v huggingface-cli &> /dev/null; then
-#     echo "huggingface-cli のインストールに失敗しました。"
-#     exit 1
-# fi
-
-# if [ ! -d "$FS_ROOT" ]; then
-#     mkdir -p "$HOME/workspace"
-#     git clone https://github.com/fishaudio/fish-speech "$FS_ROOT"
-#     cd ./fish-speech
-# fi
-
-# git -C "$FS_ROOT" switch main
-# git -C "$FS_ROOT" fetch -p
-# git -C "$FS_ROOT" pull
-
-# # 作業ディレクトリに移動
-# cd "$FS_ROOT"
-
-# # 仮想環境の作成
-# PYTHON_VERSION=3.10.0
-# uv venv --python "$PYTHON_VERSION"
-# # shellcheck source=/dev/null
-# source .venv/bin/activate
-# python -V
-# uv pip install --upgrade pip
-# uv add --dev --python "$PYTHON_VERSION" torch==2.4.1 torchvision==0.19.1 torchaudio==2.4.1
-# uv add --dev --python "$PYTHON_VERSION" click pydub fish-audio-preprocess
-
-# # モデルのダウンロード先ディレクトリを作成
-# mkdir -p "$FS_ROOT/models/checkpoints"
-
-# # モデルをダウンロード
-# huggingface-cli download fishaudio/fish-speech-1.4 \
-#     --local-dir "$HOME/workspace/GenLipSyncVideo/models/checkpoints/fish-speech-1.4"
-
-# mkdir -p ./data/raw/separate
-# mkdir -p ./data/speech-to-text
-
-# echo "セットアップが完了しました。"
