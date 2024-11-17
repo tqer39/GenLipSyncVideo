@@ -128,7 +128,7 @@ huggingface-cli download fishaudio/fish-speech-1.4 --local-dir "$MODEL_DIR"
 
 # uv で必要なライブラリをインストール
 echo_info "uv でライブラリをインストール中..."
-uv add --dev --python "$PYTHON_VERSION" torch==2.4.1 torchvision==0.19.1 torchaudio==2.4.1
+uv add --dev --python "$PYTHON_VERSION" torch==2.4.1 torchvision==0.19.1 torchaudio==2.4.1 openai-whisper
 
 # セットアップ環境の確認
 echo_info "セットアップ環境の確認:"
