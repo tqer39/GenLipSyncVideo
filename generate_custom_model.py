@@ -1,7 +1,6 @@
 import argparse
 from pathlib import Path
 from typing import Optional
-import shutil
 import subprocess
 
 
@@ -35,17 +34,26 @@ def get_audio_duration(file_path: Path) -> int:
     return int(float(duration)) if duration else 0
 
 
-def clean_audio(file_path: Path, output_path: Path) -> None:
+def clean_audio(file_path: Path, output_dir: Path) -> Path:
     """
     fap を使用して音声データをクリーンアップします。
 
     Args:
         file_path (Path): 元の音声データファイル。
-        output_path (Path): クリーンアップされた音声データの保存先。
+        output_dir (Path): クリーンアップされた音声データの保存先ディレクトリ。
+
+    Returns:
+        Path: クリーンアップされた音声データのパス。
     """
+    output_path = output_dir / f"cleaned_{file_path.name}"
     cmd = ["fap", "clean", str(file_path), "-o", str(output_path)]
-    subprocess.run(cmd, check=True)
-    print(f"クリーンアップされた音声データを生成しました: {output_path}")
+    try:
+        subprocess.run(cmd, check=True)
+        print(f"クリーンアップされた音声データを生成しました: {output_path}")
+    except subprocess.CalledProcessError as e:
+        print(f"エラー: 音声のクリーンアップに失敗しました: {file_path}, {e}")
+        raise
+    return output_path
 
 
 def generate_text(file_path: Path, output_dir: Path) -> Path:
@@ -61,8 +69,12 @@ def generate_text(file_path: Path, output_dir: Path) -> Path:
     """
     text_file = output_dir / f"{file_path.stem}.lab"
     cmd = ["fap", "transcribe", str(file_path), "-o", str(text_file)]
-    subprocess.run(cmd, check=True)
-    print(f"テキストデータ（.lab）を生成しました: {text_file}")
+    try:
+        subprocess.run(cmd, check=True)
+        print(f"テキストデータ（.lab）を生成しました: {text_file}")
+    except subprocess.CalledProcessError as e:
+        print(f"エラー: テキストデータの生成に失敗しました: {file_path}, {e}")
+        raise
     return text_file
 
 
@@ -125,38 +137,43 @@ def split_audio_files(
             output_file = separate_dir / output_filename
 
             if not force and output_file.exists():
-                print(f"スキップ: ファイルが既に存在します: {output_file}")
-            else:
-                # ffmpeg を使用して分割
-                cmd = [
-                    "ffmpeg",
-                    "-y",
-                    "-i",
-                    str(audio_file),
-                    "-ss",
-                    str(duration),
-                    "-t",
-                    str(term),
-                    str(output_file),
-                ]
+                continue  # ログを減らすため省略
+
+            # ffmpeg を使用して分割
+            cmd = [
+                "ffmpeg",
+                "-y",
+                "-i",
+                str(audio_file),
+                "-ss",
+                str(duration),
+                "-t",
+                str(term),
+                str(output_file),
+            ]
+            try:
                 subprocess.run(cmd, check=True)
                 print(f"生成されたファイル: {output_file}")
+            except subprocess.CalledProcessError as e:
+                print(f"エラー: 音声分割に失敗しました: {output_file}, {e}")
+                raise
 
-                # 音声をクリーンアップ
-                cleaned_file = output_file.with_name(f"cleaned_{output_file.name}")
-                clean_audio(output_file, cleaned_file)
+            # 音声をクリーンアップ
+            cleaned_file = clean_audio(output_file, separate_dir)
 
-                # テキストデータを生成
-                text_file = generate_text(cleaned_file)
+            # テキストデータを生成
+            text_file = generate_text(cleaned_file, separate_dir)
 
-                # テキストデータの確認
-                if not validate_generated_text(text_file):
-                    print(
-                        f"エラー: テキストデータが無効です。再生成が必要です: {text_file}"
-                    )
+            # テキストデータの確認
+            if not validate_generated_text(text_file):
+                print(
+                    f"エラー: テキストデータが無効です。再生成が必要です: {text_file}"
+                )
 
             file_counter += 1
             duration += term - overlay
+
+    print(f"全ての音声ファイルの処理が完了しました: {model_name}")
 
 
 def main():
@@ -199,7 +216,6 @@ def main():
     args = parser.parse_args()
 
     try:
-        # 音声分割を実行
         split_audio_files(
             model_name=args.model_name,
             start=args.start,
@@ -207,7 +223,6 @@ def main():
             overlay=args.overlay,
             force=args.force,
         )
-        print("処理が完了しました！")
     except Exception as e:
         print(f"エラーが発生しました: {e}")
 
