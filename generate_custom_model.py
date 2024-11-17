@@ -1,5 +1,4 @@
 import argparse
-import os
 import shutil
 from pathlib import Path
 from typing import Optional
@@ -16,7 +15,7 @@ def create_and_copy_data(
         model_name (str): コピー先のサブディレクトリ名。
                           `./data/raw/model_name` 内に作成されます。
                           `--copy-source-raw-directory` が指定されている場合にのみ、データのコピー先となります。
-        copy_source_raw_directory (Optional[str]): コピー元のサブディレクトリ名。
+        copy_source_raw_directory (Optional[str]): コピー元ディレクトリのパス（相対パスまたは絶対パス）。
     """
     # ベースディレクトリの設定
     base_path = Path("./data/raw/model_name")
@@ -28,7 +27,7 @@ def create_and_copy_data(
 
     # コピー元が指定されている場合
     if copy_source_raw_directory:
-        source_path = base_path / copy_source_raw_directory
+        source_path = Path(copy_source_raw_directory)
 
         # コピー元ディレクトリが存在するか確認
         if not source_path.exists():
@@ -53,8 +52,8 @@ def main():
         "--copy-source-raw-directory",
         type=str,
         help=(
-            "コピー元のフォルダ名（オプション）。"
-            "`./data/raw/model_name` 内のフォルダ名を指定します。このオプションが指定されている場合のみデータをコピーします。"
+            "コピー元のディレクトリパス（相対パスまたは絶対パス）。"
+            "指定されている場合のみデータをコピーします。"
         ),
     )
     parser.add_argument(
