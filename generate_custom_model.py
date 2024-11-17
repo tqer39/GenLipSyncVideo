@@ -65,8 +65,12 @@ def split_audio_files(
     separate_dir = base_path / "separate"
     separate_dir.mkdir(parents=True, exist_ok=True)
 
-    # 音声ファイルの処理（ファイル名で昇順ソート）
-    for audio_file in sorted(base_path.glob("*.wav")):
+    # 音声ファイルの処理（wav と mp3 を対象にファイル名で昇順ソート）
+    audio_files = sorted(
+        file for ext in ("*.wav", "*.mp3") for file in base_path.glob(ext)
+    )
+
+    for audio_file in audio_files:
         print(f"処理中のファイル: {audio_file}")
         duration = start
         file_counter = 1
