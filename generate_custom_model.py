@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import Optional
 import shutil
 import subprocess
-import re
 
 
 def get_audio_duration(file_path: Path) -> int:
@@ -202,10 +201,10 @@ def transcribe_audio_files(model_name: str, force: bool = False) -> None:
 
 def main():
     """
-    引数を受け取り、データコピー、音声分割、クリーンアップ、文字起こしを順次処理します。
+    引数を受け取り、データコピーのみを実行します。
     """
     parser = argparse.ArgumentParser(
-        description="カスタムモデルのデータ構造を生成し、音声データを分割・クリーンアップ・文字起こしします。"
+        description="データを指定されたディレクトリにコピーします。"
     )
     parser.add_argument(
         "--copy-source-raw-directory",
@@ -219,37 +218,9 @@ def main():
         help="コピー先のサブディレクトリ名。`./data/raw/model_name` 内に作成されます。",
     )
     parser.add_argument(
-        "--start",
-        type=int,
-        default=0,
-        help="分割の開始時間（秒）。デフォルトは 0。",
-    )
-    parser.add_argument(
-        "--term",
-        type=int,
-        default=30,
-        help="分割するデータの長さ（秒）。デフォルトは 30 秒。",
-    )
-    parser.add_argument(
-        "--overlay",
-        type=int,
-        default=5,
-        help="分割の重なり間隔（秒）。デフォルトは 5 秒。",
-    )
-    parser.add_argument(
         "--force",
         action="store_true",
-        help="既存のファイルやテキストデータを上書きします。",
-    )
-    parser.add_argument(
-        "--split-only",
-        action="store_true",
-        help="音声分割のみ実行します。",
-    )
-    parser.add_argument(
-        "--transcribe-only",
-        action="store_true",
-        help="文字起こしのみ実行します。",
+        help="既存のファイルを上書きします。",
     )
 
     args = parser.parse_args()
@@ -261,23 +232,11 @@ def main():
                 copy_source_raw_directory=args.copy_source_raw_directory,
                 force=args.force,
             )
-
-        if not args.transcribe_only:
-            split_audio_files(
-                model_name=args.model_name,
-                start=args.start,
-                term=args.term,
-                overlay=args.overlay,
-                force=args.force,
+        else:
+            print(
+                "コピー元ディレクトリが指定されていません。--copy-source-raw-directory を指定してください。"
             )
-
-        if not args.split_only:
-            transcribe_audio_files(
-                model_name=args.model_name,
-                force=args.force,
-            )
-
-        print("すべての処理が完了しました！")
+        print("コピー処理が完了しました！")
     except Exception as e:
         print(f"エラーが発生しました: {e}")
 
