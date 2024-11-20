@@ -1,10 +1,41 @@
 #!/bin/bash
 
-set -ex  # エラー時に終了し、実行コマンドを表示
+set -ex  # エラー時に即終了
 
-FS_ROOT="$HOME/workspace/fish-speech"
+# メッセージ出力関数
+function echo_success() { echo -e "\033[32m🎉 [SUCCESS] $1\033[0m"; }
+function echo_warning() { echo -e "\033[33m⚠️ [WARNING] $1\033[0m"; }
+function echo_error() { echo -e "\033[31m❌ [ERROR] $1\033[0m"; }
+function echo_info() { echo -e "\033[34mℹ️ [INFO] $1\033[0m"; }
 
-# 必要なシステムパッケージをインストール
+# デフォルト設定
+DEFAULT_DIR=$(pwd)
+MODEL_DIR="checkpoints/fish-speech-1.4"
+
+# 引数処理
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --directory)
+            if [ -n "$2" ]; then
+                DEFAULT_DIR="$2"
+                shift 2
+            else
+                echo_error "--directory オプションにはパスを指定してください。"
+                exit 1
+            fi
+            ;;
+        *)
+            echo_error "不明なオプション: $1"
+            exit 1
+            ;;
+    esac
+done
+
+# 作業ディレクトリの設定
+cd "$DEFAULT_DIR" || { echo_error "ディレクトリに移動できません: $DEFAULT_DIR"; exit 1; }
+
+# 必要なライブラリのインストール
+echo_info "Ubuntu の必要なパッケージをインストール中..."
 sudo apt update
 sudo apt install -y \
     build-essential \
@@ -20,46 +51,92 @@ sudo apt install -y \
     python3-venv \
     git
 
-# huggingface_hub をインストール
-pip install huggingface_hub
-
-# huggingface-cli がインストールされているか確認
-if ! command -v huggingface-cli &> /dev/null; then
-    echo "huggingface-cli のインストールに失敗しました。"
-    exit 1
+# anyenv のインストール
+if ! command -v anyenv >/dev/null; then
+    echo_info "anyenv をインストール中..."
+    git clone https://github.com/anyenv/anyenv ~/.anyenv
+    export PATH="$HOME/.anyenv/bin:$PATH"
+    ~/.anyenv/bin/anyenv install --init
+else
+    echo_success "anyenv は既にインストールされています。"
 fi
 
-if [ ! -d "$FS_ROOT" ]; then
-    mkdir -p "$HOME/workspace"
-    git clone https://github.com/fishaudio/fish-speech "$FS_ROOT"
-    cd ./fish-speech
+# anyenv で pyenv のインストール
+if ! command -v pyenv >/dev/null; then
+    echo_info "pyenv を anyenv でインストール中..."
+    anyenv install pyenv
+    export PATH="$HOME/.anyenv/envs/pyenv/bin:$PATH"
+else
+    echo_success "pyenv は既にインストールされています。"
 fi
 
-git -C "$FS_ROOT" switch main
-git -C "$FS_ROOT" fetch -p
-git -C "$FS_ROOT" pull
+# pyenv 環境のセットアップ
+echo_info "Python 3.13.0 を pyenv でインストール中..."
+eval "$(pyenv init --path)"
+pyenv install -s 3.13.0
+pyenv local 3.13.0
 
-# 作業ディレクトリに移動
-cd "$FS_ROOT"
+# Homebrew のインストール
+if ! command -v brew >/dev/null; then
+    echo_info "Homebrew をインストール中..."
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+else
+    echo_success "Homebrew は既にインストールされています。"
+fi
 
-# 仮想環境の作成
+# uv のインストール
+if ! command -v uv >/dev/null; then
+    echo_info "uv をインストール中..."
+    brew install uv
+else
+    echo_success "uv は既にインストールされています。"
+fi
+
+# uv 仮想環境のセットアップ
+echo_info "uv 仮想環境をセットアップ中..."
 PYTHON_VERSION=3.10.0
-uv venv --python "$PYTHON_VERSION"
+if [ ! -d ".venv" ]; then
+    echo_info "uv 仮想環境を作成中..."
+    uv venv --python "$PYTHON_VERSION"
+else
+    echo_success "既存の uv 仮想環境を検出しました。"
+fi
 # shellcheck source=/dev/null
-source .venv/bin/activate
+source ".venv/bin/activate"
+
+# Python バージョン確認
+echo_info "Python バージョン確認中..."
 python -V
+
+# pip のアップグレード
+echo_info "pip を仮想環境内でアップグレード中..."
 uv pip install --upgrade pip
-uv add --dev --python "$PYTHON_VERSION" torch==2.4.1 torchvision==0.19.1 torchaudio==2.4.1
-uv add --dev --python "$PYTHON_VERSION" click pydub fish-audio-preprocess
 
-# モデルのダウンロード先ディレクトリを作成
-mkdir -p "$FS_ROOT/models/checkpoints"
+# Hugging Face CLI のインストール
+if ! command -v huggingface-cli >/dev/null; then
+    echo_info "Hugging Face CLI をインストール中..."
+    pip install huggingface-hub
+else
+    echo_success "Hugging Face CLI は既にインストールされています。"
+fi
 
-# モデルをダウンロード
-huggingface-cli download fishaudio/fish-speech-1.4 \
-    --local-dir "$HOME/workspace/GenLipSyncVideo/models/checkpoints/fish-speech-1.4"
+# モデルのダウンロード
+echo_info "Hugging Face CLI でモデルをダウンロード中..."
+mkdir -p "$MODEL_DIR"
+huggingface-cli download fishaudio/fish-speech-1.4 --local-dir "$MODEL_DIR"
 
-mkdir -p ./data/raw/separate
-mkdir -p ./data/speech-to-text
+# uv で必要なライブラリをインストール
+echo_info "uv でライブラリをインストール中..."
+uv add --dev --python "$PYTHON_VERSION" torch==2.4.1 torchvision==0.19.1 torchaudio==2.4.1 \
+    fish-audio-preprocess pydub
 
-echo "セットアップが完了しました。"
+# セットアップ環境の確認
+echo_info "セットアップ環境の確認:"
+echo_info "Python バージョン: $(python -V)"
+echo_info "pip バージョン: $(pip -V)"
+echo_info "インストールされたライブラリ:"
+pip list | grep -E "torch|torchvision|torchaudio"
+
+# 完了メッセージ
+echo_success "すべてのセットアップが完了しました！"

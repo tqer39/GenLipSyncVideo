@@ -238,15 +238,3 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/linux,macos,windows,python
-
-# customize
-# data files
-data/raw/*
-data/processed/*
-data/transcriptions/*
-data/datasets/*
-data/speech-to-text/*
-
-# model checkpoints
-models/checkpoints/*
-fish-speech/*

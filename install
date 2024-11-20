@@ -1,0 +1,79 @@
+#!/bin/bash
+
+set -ex  # エラー時に即終了
+
+# メッセージ出力関数
+function echo_success() { echo -e "\033[32m🎉 [SUCCESS] $1\033[0m"; }
+function echo_warning() { echo -e "\033[33m⚠️ [WARNING] $1\033[0m"; }
+function echo_error() { echo -e "\033[31m❌ [ERROR] $1\033[0m"; }
+function echo_info() { echo -e "\033[34mℹ️ [INFO] $1\033[0m"; }
+
+# デフォルトの作業ディレクトリ
+DEFAULT_WORKSPACE="$HOME/workspace"
+FISH_SPEECH_DIR="$DEFAULT_WORKSPACE/fish-speech"
+FS_REPO_URL="https://github.com/your-repo/fish-speech.git"  # fish-speech のリポジトリURLを記載してください
+
+# シンボリックリンク作成対象のファイル名リスト
+SYMLINK_FILES=(
+  "setup"
+  "generate_custom_model.py"
+  "scripts/__init__.py"
+  "scripts/create_and_copy_data.py"
+  "scripts/separate.py"
+)
+
+# 引数処理
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --directory)
+      if [ -n "$2" ]; then
+        FISH_SPEECH_DIR="$2/fish-speech"
+        shift 2
+      else
+        echo_error "--directory オプションにはパスを指定してください。"
+        exit 1
+      fi
+      ;;
+    *)
+      echo_error "不明なオプション: $1"
+      exit 1
+      ;;
+  esac
+done
+
+# 作業ディレクトリの作成
+if [ ! -d "$FISH_SPEECH_DIR" ]; then
+    echo_success "ディレクトリを作成中: $FISH_SPEECH_DIR"
+    mkdir -p "$FISH_SPEECH_DIR"
+else
+    echo_warning "ディレクトリは既に存在します: $FISH_SPEECH_DIR"
+fi
+
+# scripts ディレクトリの作成
+mkdir -p "$FISH_SPEECH_DIR/scripts"
+
+# git clone 実行
+if [ -d "$FISH_SPEECH_DIR/.git" ]; then
+    echo_warning "fish-speech リポジトリは既にクローン済みです。最新状態に更新中..."
+    cd "$FISH_SPEECH_DIR" && git pull
+else
+    echo_success "fish-speech リポジトリをクローン中..."
+    git clone "$FS_REPO_URL" "$FISH_SPEECH_DIR"
+fi
+
+# シンボリックリンク作成
+for file in "${SYMLINK_FILES[@]}"; do
+    SRC="$DEFAULT_WORKSPACE/GenLipSyncVideo/$file"
+    DEST="$FISH_SPEECH_DIR/$file"
+    if [ -f "$SRC" ]; then
+        echo_success "シンボリックリンクを作成中: $SRC → $DEST"
+        ln -sf "$SRC" "$DEST"
+    else
+        echo_warning "$SRC が存在しません。スキップします。"
+    fi
+done
+
+# 完了メッセージ
+echo_info "fish-speech リポジトリのセットアップが完了しました！"
+echo_info "作業ディレクトリ: $FISH_SPEECH_DIR"
+echo_info "シンボリックリンクが設定されました。"

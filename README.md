@@ -15,8 +15,7 @@ bash ./setup
 
 ```bash
 deactivate
-source ../venv/bin/activate
-# separate.py の使い方
+source .venv/bin/activate
 ```
 
 #### 引数の説明
@@ -66,7 +65,7 @@ python "$HOME/workspace/GenLipSyncVideo/scripts/separate.py" \
 
 ```bash
 deactivate
-source ../venv/bin/activate
+source .venv/bin/activate
 ```
 
 #### 引数の説明
