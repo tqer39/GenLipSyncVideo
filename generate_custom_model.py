@@ -26,11 +26,4 @@ if __name__ == "__main__":
         parser.print_help()
         sys.exit(1)
     args = parser.parse_args()
-    create_and_copy_data.main(
-        [
-            "--model-name",
-            args.model_name,
-            "--copy-source-raw-directory",
-            args.copy_source_raw_directory,
-        ]
-    )
+    create_and_copy_data.main(args)
