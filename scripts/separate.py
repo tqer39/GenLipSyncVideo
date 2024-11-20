@@ -39,7 +39,9 @@ def main(args=None):
 
     while True:
         base_filename = os.path.splitext(os.path.basename(input_file))[0]
-        output_filename = f"{base_filename}_{segment_number:03d}.wav"
+        output_filename = f"{base_filename}_{segment_number:05d}.wav"
+        if input_file.lower().endswith(".mp3"):
+            output_filename = f"{base_filename}_{segment_number:05d}.mp3"
         output_filepath = os.path.join(output_dir, output_filename)
         command = [
             "ffmpeg",
