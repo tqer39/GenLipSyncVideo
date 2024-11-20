@@ -19,6 +19,7 @@ SYMLINK_FILES=(
   "generate_custom_model.py"
   "scripts/__init__.py"
   "scripts/create_and_copy_data.py"
+  "scripts/separate.py"
 )
 
 # 引数処理
