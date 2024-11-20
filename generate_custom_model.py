@@ -42,6 +42,11 @@ def parse_arguments():
         default=5,
         help="[OPTION] 分割の重なり（秒）。デフォルトは 5 です。",
     )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="[OPTION] 同名のファイルがある場合に強制的に上書きします。",
+    )
     return parser
 
 

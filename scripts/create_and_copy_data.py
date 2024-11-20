@@ -13,6 +13,11 @@ def parse_arguments() -> Namespace:
         help="元になる音声ファイル（mp3, wav など）のパスを指定するディレクトリ",
     )
     parser.add_argument("--model-name", required=True, help="コピー先のディレクトリ名")
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="同名のファイルがある場合に強制的に上書きします。",
+    )
     return parser.parse_args()
 
 
@@ -25,8 +30,14 @@ def main(args=None):
         os.makedirs(raw_dir, exist_ok=True)
         for file in os.listdir(args.copy_source_raw_directory):
             if file.endswith((".mp3", ".wav")):
-                shutil.copy(os.path.join(args.copy_source_raw_directory, file), raw_dir)
-                print(f"コピーされたファイル: {os.path.join(raw_dir, file)}")
+                dest_file = os.path.join(raw_dir, file)
+                if os.path.exists(dest_file) and not args.force:
+                    print(f"スキップされたファイル: {dest_file}（既に存在します）")
+                else:
+                    shutil.copy(
+                        os.path.join(args.copy_source_raw_directory, file), dest_file
+                    )
+                    print(f"コピーされたファイル: {dest_file}")
 
 
 if __name__ == "__main__":
