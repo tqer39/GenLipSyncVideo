@@ -1,10 +1,13 @@
 import scripts.create_and_copy_data as create_and_copy_data
 import sys
+import argparse
+
+def parse_arguments():
+    parser = argparse.ArgumentParser(description="カスタムモデルを生成します。")
+    parser.add_argument("arg", help="引数")
+    parser.add_argument("--model-name", required=True, help="モデル名")
+    return parser.parse_args()
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3:
-        print("Usage: python generate_custom_model.py <arg> --model-name <model_name>")
-        sys.exit(1)
-    arg = sys.argv[1]
-    model_name = sys.argv[2]
-    create_and_copy_data.main(["--model-name", model_name])
+    args = parse_arguments()
+    create_and_copy_data.main(["--model-name", args.model_name])
