@@ -14,3 +14,10 @@ bash install
 cd "$HOME/workspace/fish-speech"
 bash setup
 ```
+
+### ファイルコピーのみ実行
+
+```bash
+python generate_custom_model.py --copy-source-raw-directory ./data/tmp \
+    --model-name model_name --file-copy-only
+```
