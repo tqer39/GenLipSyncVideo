@@ -25,6 +25,11 @@ def parse_arguments():
         help="[OPTION] ファイルコピーのみを実行します。",
     )
     parser.add_argument(
+        "--file-separate-only",
+        action="store_true",
+        help="[OPTION] ファイル分割のみを実行します。",
+    )
+    parser.add_argument(
         "--start",
         type=int,
         default=0,
@@ -56,7 +61,8 @@ if __name__ == "__main__":
         parser.print_help()
         sys.exit(1)
     args = parser.parse_args()
-    create_and_copy_data.main(args)
+    if not args.file_separate_only:
+        create_and_copy_data.main(args)
     if args.file_copy_only:
         sys.exit(0)
 
