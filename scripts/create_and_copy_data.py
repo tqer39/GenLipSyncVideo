@@ -1,5 +1,6 @@
 import os
 import argparse
+import shutil
 from pydub import AudioSegment
 from argparse import Namespace
 
@@ -19,6 +20,8 @@ def parse_arguments() -> Namespace:
     parser.add_argument(
         "--duration", type=int, required=True, help="各分割ファイルの長さ（秒）"
     )
+    parser.add_argument("--copy-source-raw-directory", help="元になる音声ファイル（mp3, wav など）のパスを指定するディレクトリ")
+    parser.add_argument("--model-name", required=True, help="音声ファイルを分割するためのオリジナルのファイル名")
     return parser.parse_args()
 
 
@@ -48,6 +51,14 @@ def main(args=None):
     if not os.path.isdir(output_dir):
         print(f"出力ディレクトリが見つかりません: {output_dir}")
         return
+
+    if args.copy_source_raw_directory:
+        raw_dir = os.path.join("./data/raw", args.model_name)
+        os.makedirs(raw_dir, exist_ok=True)
+        for file in os.listdir(args.copy_source_raw_directory):
+            if file.endswith((".mp3", ".wav")):
+                shutil.copy(os.path.join(args.copy_source_raw_directory, file), raw_dir)
+                print(f"コピーされたファイル: {os.path.join(raw_dir, file)}")
 
     for input_file in input_files:
         # 入力ファイルの存在確認
