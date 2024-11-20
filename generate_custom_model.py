@@ -72,8 +72,6 @@ if __name__ == "__main__":
                 [
                     "python",
                     "scripts/separate.py",
-                    "--input",
-                    input_file,
                     "--start",
                     str(args.start),
                     "--interval",
