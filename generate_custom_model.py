@@ -4,6 +4,7 @@ import argparse
 import subprocess
 import os
 
+
 def parse_arguments():
     parser = argparse.ArgumentParser(
         description="カスタムモデルを生成します。\n\n"
@@ -62,11 +63,17 @@ if __name__ == "__main__":
     for file in sorted(os.listdir(raw_dir)):
         if file.endswith((".mp3", ".wav")):
             input_file = os.path.join(raw_dir, file)
-            subprocess.run([
-                "python", "scripts/separate.py",
-                "--input", input_file,
-                "--output", separate_dir,
-                "--start", str(args.start),
-                "--interval", str(args.term),
-                "--duration", str(args.term + args.overlay)
-            ])
+            subprocess.run(
+                [
+                    "python",
+                    "scripts/separate.py",
+                    "--input",
+                    input_file,
+                    "--start",
+                    str(args.start),
+                    "--interval",
+                    str(args.term),
+                    "--duration",
+                    str(args.term + args.overlay),
+                ]
+            )
