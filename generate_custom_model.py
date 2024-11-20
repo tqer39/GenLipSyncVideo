@@ -7,16 +7,15 @@ def parse_arguments():
     parser = argparse.ArgumentParser(
         description="カスタムモデルを生成します。\n\n"
         "このスクリプトは指定された音声ファイルを分割し、"
-        "指定されたディレクトリにコピーします。\n"
-        "オプション:\n"
-        "  --model-name: モデル名を指定します。\n"
-        "  --copy-source-raw-directory: 元になる音声ファイル（mp3, wav など）のパスを指定するディレクトリを指定します。\n"
+        "指定されたディレクトリにコピーします。"
     )
     parser.add_argument("arg", nargs="?", help="引数")
-    parser.add_argument("--model-name", required=True, help="モデル名")
+    parser.add_argument(
+        "--model-name", required=True, help="[REQUIRED] モデル名を指定します。"
+    )
     parser.add_argument(
         "--copy-source-raw-directory",
-        help="元になる音声ファイル（mp3, wav など）のパスを指定するディレクトリ",
+        help="[OPTION] 元になる音声ファイル（mp3, wav など）のパスを指定するディレクトリを指定します。",
     )
     return parser
 
