@@ -14,7 +14,6 @@ def parse_arguments() -> Namespace:
         "--directory", help="入力する複数のWAVファイルが存在するディレクトリのパス"
     )
     parser.add_argument("--output", required=True, help="出力するディレクトリのパス")
-    parser.add_argument("--dmm-id", help="DMM ID（例: d_208302）")
     parser.add_argument("--start", type=int, required=True, help="分割開始時間（秒）")
     parser.add_argument("--interval", type=int, required=True, help="分割間隔（秒）")
     parser.add_argument(
@@ -42,7 +41,6 @@ def main(args=None):
                 input_files.append(os.path.join(args.directory, file))
 
     output_dir = args.output
-    dmm_id = args.dmm_id
     start_time = args.start * 1000  # ミリ秒に変換
     interval = args.interval * 1000  # ミリ秒に変換
     duration = args.duration * 1000  # ミリ秒に変換
@@ -67,7 +65,7 @@ def main(args=None):
             continue
 
         # 出力ディレクトリの作成
-        output_path = os.path.join(output_dir, dmm_id) if dmm_id else output_dir
+        output_path = output_dir
         os.makedirs(output_path, exist_ok=True)
 
         # オーディオファイルの読み込み
