@@ -22,8 +22,9 @@ def parse_arguments() -> Namespace:
     return parser.parse_args()
 
 
-def main():
-    args = parse_arguments()
+def main(args=None):
+    if args is None:
+        args = parse_arguments()
 
     if not args.input and not args.directory:
         print("エラー: --input または --directory のいずれかを指定してください。")
