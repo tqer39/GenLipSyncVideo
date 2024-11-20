@@ -10,9 +10,7 @@ def parse_arguments() -> Namespace:
     )
     parser.add_argument("--start", type=int, default=0, help="分割開始時間（秒）")
     parser.add_argument("--interval", type=int, default=30, help="分割間隔（秒）")
-    parser.add_argument(
-        "--duration", type=int, default=35, help="各分割ファイルの長さ（秒）"
-    )
+    parser.add_argument("--overlay", type=int, default=5, help="分割の重なり（秒）")
     return parser.parse_args()
 
 
@@ -24,7 +22,8 @@ def main(args=None):
     output_dir = os.path.dirname(input_file)
     start_time = args.start
     interval = args.interval
-    duration = args.duration
+    overlay = args.overlay
+    duration = interval + overlay
 
     # 出力ディレクトリの存在確認
     if not os.path.isdir(output_dir):

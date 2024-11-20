@@ -76,7 +76,7 @@ if __name__ == "__main__":
                     str(args.start),
                     "--interval",
                     str(args.term),
-                    "--duration",
-                    str(args.term + args.overlay),
+                    "--overlay",
+                    str(args.overlay),
                 ]
             )
