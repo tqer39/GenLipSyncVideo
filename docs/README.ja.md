@@ -21,3 +21,10 @@ bash setup
 python generate_custom_model.py --copy-source-raw-directory ./data/tmp \
     --model-name model_name --file-copy-only
 ```
+
+### ファイルコピーと分割実行
+
+```bash
+python generate_custom_model.py --copy-source-raw-directory ./data/tmp \
+    --model-name model_name --start 0 --term 30 --overlay 5
+```

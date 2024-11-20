@@ -1,7 +1,8 @@
 import scripts.create_and_copy_data as create_and_copy_data
 import sys
 import argparse
-
+import subprocess
+import os
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
@@ -22,6 +23,24 @@ def parse_arguments():
         action="store_true",
         help="[OPTION] ファイルコピーのみを実行します。",
     )
+    parser.add_argument(
+        "--start",
+        type=int,
+        default=0,
+        help="[OPTION] 分割の開始位置（秒）。デフォルトは 0 です。",
+    )
+    parser.add_argument(
+        "--term",
+        type=int,
+        default=30,
+        help="[OPTION] 分割の間隔（秒）。デフォルトは 30 です。",
+    )
+    parser.add_argument(
+        "--overlay",
+        type=int,
+        default=5,
+        help="[OPTION] 分割の重なり（秒）。デフォルトは 5 です。",
+    )
     return parser
 
 
@@ -34,4 +53,20 @@ if __name__ == "__main__":
     create_and_copy_data.main(args)
     if args.file_copy_only:
         sys.exit(0)
-    # ...additional processing code...
+
+    # separate.py を実行して音声データを分割
+    raw_dir = f"./data/raw/{args.model_name}"
+    separate_dir = os.path.join(raw_dir, "separate")
+    os.makedirs(separate_dir, exist_ok=True)
+
+    for file in sorted(os.listdir(raw_dir)):
+        if file.endswith((".mp3", ".wav")):
+            input_file = os.path.join(raw_dir, file)
+            subprocess.run([
+                "python", "scripts/separate.py",
+                "--input", input_file,
+                "--output", separate_dir,
+                "--start", str(args.start),
+                "--interval", str(args.term),
+                "--duration", str(args.term + args.overlay)
+            ])
