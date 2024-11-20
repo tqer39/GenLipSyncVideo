@@ -17,6 +17,11 @@ def parse_arguments():
         "--copy-source-raw-directory",
         help="[OPTION] 元になる音声ファイル（mp3, wav など）のパスを指定するディレクトリを指定します。",
     )
+    parser.add_argument(
+        "--file-copy-only",
+        action="store_true",
+        help="[OPTION] ファイルコピーのみを実行します。",
+    )
     return parser
 
 
@@ -27,3 +32,6 @@ if __name__ == "__main__":
         sys.exit(1)
     args = parser.parse_args()
     create_and_copy_data.main(args)
+    if args.file_copy_only:
+        sys.exit(0)
+    # ...additional processing code...
