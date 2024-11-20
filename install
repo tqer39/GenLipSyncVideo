@@ -17,6 +17,7 @@ FS_REPO_URL="https://github.com/your-repo/fish-speech.git"  # fish-speech のリ
 SYMLINK_FILES=(
   "setup"
   "generate_custom_model.py"
+  "scripts/__init__.py"
   "scripts/create_and_copy_data.py"
 )
 
