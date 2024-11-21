@@ -11,6 +11,7 @@ def parse_arguments() -> Namespace:
     parser.add_argument("--start", type=int, default=0, help="分割開始時間（秒）")
     parser.add_argument("--interval", type=int, default=30, help="分割間隔（秒）")
     parser.add_argument("--overlay", type=int, default=5, help="分割の重なり（秒）")
+    parser.add_argument("--force", action="store_true", help="既存ファイルを強制的に上書きします。")
     return parser.parse_args()
 
 
@@ -24,6 +25,7 @@ def main(args=None):
     interval = args.interval
     overlay = args.overlay
     duration = interval + overlay
+    force = args.force
 
     # 出力ディレクトリの存在確認
     if not os.path.isdir(output_dir):
@@ -43,6 +45,16 @@ def main(args=None):
         if input_file.lower().endswith(".mp3"):
             output_filename = f"{base_filename}_{segment_number:05d}.mp3"
         output_filepath = os.path.join(output_dir, output_filename)
+
+        if os.path.exists(output_filepath):
+            if force:
+                os.remove(output_filepath)
+            else:
+                print(f"スキップされたファイル: {output_filepath}（既に存在します）")
+                segment_number += 1
+                current_time += interval
+                continue
+
         command = [
             "ffmpeg",
             "-i",
