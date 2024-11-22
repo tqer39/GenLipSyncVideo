@@ -7,6 +7,9 @@ from datetime import timedelta
 
 
 def parse_arguments() -> Namespace:
+    """
+    コマンドライン引数を解析します。
+    """
     parser = argparse.ArgumentParser(
         description="音声ファイルを指定の間隔で分割します。"
     )
@@ -22,6 +25,9 @@ def parse_arguments() -> Namespace:
 
 
 def format_time(seconds: int) -> str:
+    """
+    秒数を hh:mm:ss の形式にフォーマットします。
+    """
     td = timedelta(seconds=seconds)
     return str(td)
 
@@ -33,12 +39,18 @@ def generate_output_filename(
     end_time: int,
     file_extension: str,
 ) -> str:
+    """
+    分割後のファイル名を生成します。
+    """
     start_time_str: str = format_time(start_time).replace(":", "-")
     end_time_str: str = format_time(end_time).replace(":", "-")
     return f"{base_filename}_{segment_number:05d}_{start_time_str}~{end_time_str}{file_extension}"
 
 
 def get_audio_duration(input_file: str) -> int:
+    """
+    音声ファイルの総再生時間を取得します。
+    """
     result = subprocess.run(
         [
             "ffprobe",
@@ -64,6 +76,9 @@ def split_audio_file(
     overlay: int,
     force: bool,
 ) -> None:
+    """
+    音声ファイルを指定の間隔で分割し、出力ディレクトリに保存します。
+    """
     duration: int = interval + overlay
     total_duration: int = get_audio_duration(input_file)
 
@@ -121,6 +136,9 @@ def split_audio_file(
 
 
 def main(args: Optional[Namespace] = None) -> None:
+    """
+    メイン関数。コマンドライン引数を解析し、音声ファイルを分割します。
+    """
     if args is None:
         args = parse_arguments()
 

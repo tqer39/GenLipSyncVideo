@@ -8,6 +8,9 @@ from typing import Optional
 
 
 def parse_arguments() -> argparse.ArgumentParser:
+    """
+    コマンドライン引数を解析します。
+    """
     parser = argparse.ArgumentParser(
         description="カスタムモデルを生成します。\n\n"
         "このスクリプトは指定された音声ファイルを分割し、"
@@ -58,6 +61,9 @@ def parse_arguments() -> argparse.ArgumentParser:
 
 
 def main(args: Optional[Namespace] = None) -> None:
+    """
+    メイン関数。コマンドライン引数を解析し、音声ファイルのコピーと分割を実行します。
+    """
     parser = parse_arguments()
     if len(sys.argv) == 1:
         parser.print_help()
