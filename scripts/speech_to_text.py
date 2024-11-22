@@ -10,7 +10,7 @@ def parse_arguments() -> Namespace:
     コマンドライン引数を解析します。
     """
     parser = argparse.ArgumentParser(
-        description="音声ファイルからテキストデータを抽出し、同名の .lab ファイルに保存します。"
+        description="音声ファイルからテキストデータを抽出し、同名のファイルに保存します。"
     )
     parser.add_argument(
         "--input-dir", required=True, help="[REQUIRED] 入力音声ファイルのディレクトリ"
@@ -19,6 +19,12 @@ def parse_arguments() -> Namespace:
         "--output-dir",
         required=True,
         help="[REQUIRED] 出力テキストファイルのディレクトリ",
+    )
+    parser.add_argument(
+        "--extension",
+        type=str,
+        default="lab",
+        help="[OPTION] 出力ファイルの拡張子。デフォルトは 'lab' です。",
     )
     return parser.parse_args()
 
@@ -34,7 +40,7 @@ def speech_to_text(input_file: str) -> str:
 
 def main(args: Optional[Namespace] = None) -> None:
     """
-    メイン関数。音声ファイルからテキストデータを抽出し、同名の .lab ファイルに保存します。
+    メイン関数。音声ファイルからテキストデータを抽出し、同名のファイルに保存します。
     """
     if args is None:
         args = parse_arguments()
@@ -45,7 +51,7 @@ def main(args: Optional[Namespace] = None) -> None:
         if file.endswith((".mp3", ".wav")):
             input_file: str = os.path.join(args.input_dir, file)
             output_file: str = os.path.join(
-                args.output_dir, os.path.splitext(file)[0] + ".lab"
+                args.output_dir, os.path.splitext(file)[0] + f".{args.extension}"
             )
             text: str = speech_to_text(input_file)
             with open(output_file, "w") as f:

@@ -74,6 +74,12 @@ def parse_arguments() -> argparse.ArgumentParser:
         help="[OPTION] ラウドネス正規化のターゲット値（dB LUFS）。デフォルトは -23.0 dB LUFS です。"
         "ターゲット値を上げると音量が大きくなり、下げると音量が小さくなります。",
     )
+    parser.add_argument(
+        "--transcription-extension",
+        type=str,
+        default="lab",
+        help="[OPTION] 出力テキストファイルの拡張子。デフォルトは 'lab' です。",
+    )
     return parser
 
 
@@ -93,7 +99,7 @@ def normalize_loudness(input_dir: str, output_dir: str, loudness_target: float) 
     subprocess.run(command, check=True)
 
 
-def transcribe_audio(input_dir: str, output_dir: str) -> None:
+def transcribe_audio(input_dir: str, output_dir: str, extension: str) -> None:
     """
     音声ファイルからテキストデータを抽出し、同名の .lab ファイルに保存します。
     """
@@ -104,6 +110,8 @@ def transcribe_audio(input_dir: str, output_dir: str) -> None:
         input_dir,
         "--output-dir",
         output_dir,
+        "--extension",
+        extension,
     ]
     subprocess.run(command, check=True)
 
@@ -139,7 +147,7 @@ def main(args: Optional[Namespace] = None) -> None:
 
     if args.file_transcribe_only:
         # 音声ファイルからテキストデータを抽出
-        transcribe_audio(normalize_dir, transcribe_dir)
+        transcribe_audio(normalize_dir, transcribe_dir, args.transcription_extension)
         sys.exit(0)
 
     if not args.file_separate_only:
@@ -176,7 +184,7 @@ def main(args: Optional[Namespace] = None) -> None:
             f.write("normalized")
 
     # 音声ファイルからテキストデータを抽出
-    transcribe_audio(normalize_dir, transcribe_dir)
+    transcribe_audio(normalize_dir, transcribe_dir, args.transcription_extension)
 
 
 if __name__ == "__main__":
