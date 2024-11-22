@@ -8,6 +8,7 @@ def parse_arguments() -> Namespace:
     parser = argparse.ArgumentParser(
         description="音声ファイルを指定の間隔で分割します。"
     )
+    parser.add_argument("--input", required=True, help="入力音声ファイルのパス")
     parser.add_argument("--start", type=int, default=0, help="分割開始時間（秒）")
     parser.add_argument("--interval", type=int, default=30, help="分割間隔（秒）")
     parser.add_argument("--overlay", type=int, default=5, help="分割の重なり（秒）")
