@@ -5,6 +5,8 @@
 ### インストール
 
 ```bash
+git clone https://github.com/GenLipSyncVideo
+cd ./GenLipSyncVideo
 bash install
 ```
 
