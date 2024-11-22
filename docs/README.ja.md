@@ -42,5 +42,5 @@ python generate_custom_model.py --copy-source-raw-directory ./data/tmp \
 
 ```bash
 python generate_custom_model.py --copy-source-raw-directory ./data/tmp \
-    --model-name model_name --file-transcribe-only --force-transcribe --whisper-model-name large
+    --model-name model_name --file-transcribe-only --force-transcribe --whisper-model-name small
 ```
