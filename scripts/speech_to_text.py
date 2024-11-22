@@ -57,6 +57,7 @@ def main(args: Optional[Namespace] = None) -> None:
             with open(output_file, "w") as f:
                 f.write(text)
             print(f"テキストデータを保存しました: {output_file}")
+            print(f"テキストの内容: {text}")
 
 
 if __name__ == "__main__":

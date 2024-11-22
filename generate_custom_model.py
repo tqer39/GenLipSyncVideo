@@ -101,7 +101,7 @@ def normalize_loudness(input_dir: str, output_dir: str, loudness_target: float) 
 
 def transcribe_audio(input_dir: str, output_dir: str, extension: str) -> None:
     """
-    音声ファイルからテキストデータを抽出し、同名の .lab ファイルに保存します。
+    音声ファイルからテキストデータを抽出し、同名のファイルに保存します。
     """
     command = [
         "python",
