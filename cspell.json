@@ -19,6 +19,7 @@
     "libportaudiocpp",
     "libsox",
     "linuxbrew",
+    "LUFS",
     "nokey",
     "noprint",
     "portaudio",
