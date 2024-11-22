@@ -37,3 +37,10 @@ python generate_custom_model.py --copy-source-raw-directory ./data/tmp \
 python generate_custom_model.py --copy-source-raw-directory ./data/tmp \
     --model-name model_name --file-transcribe-only --force-transcribe
 ```
+
+### 音声データからテキストデータを生成（強制）（Whisper のモデルを指定）
+
+```bash
+python generate_custom_model.py --copy-source-raw-directory ./data/tmp \
+    --model-name model_name --file-transcribe-only --force-transcribe --whisper-model-name large
+```
