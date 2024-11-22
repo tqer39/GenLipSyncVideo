@@ -4,6 +4,7 @@ import subprocess
 from argparse import Namespace
 from typing import Optional
 from datetime import timedelta
+import ffmpeg
 
 
 def parse_arguments() -> Namespace:
@@ -37,11 +38,17 @@ def generate_output_filename(
     return f"{base_filename}_{segment_number:05d}_{start_time_str}~{end_time_str}{file_extension}"
 
 
+def get_audio_duration(input_file: str) -> int:
+    probe = ffmpeg.probe(input_file)
+    return int(float(probe["format"]["duration"]))
+
+
 def split_audio_file(
     input_file: str, start_time: int, interval: int, overlay: int, force: bool
 ) -> None:
     output_dir: str = os.path.dirname(input_file)
     duration: int = interval + overlay
+    total_duration: int = get_audio_duration(input_file)
 
     # 出力ディレクトリの存在確認
     if not os.path.isdir(output_dir):
@@ -55,14 +62,14 @@ def split_audio_file(
     segment_number: int = 1
     current_time: int = start_time
 
-    while True:
+    while current_time < total_duration:
         base_filename: str = os.path.splitext(os.path.basename(input_file))[0]
         file_extension: str = os.path.splitext(input_file)[1]
         output_filename: str = generate_output_filename(
             base_filename,
             segment_number,
             current_time,
-            current_time + duration,
+            min(current_time + duration, total_duration),
             file_extension,
         )
         output_filepath: str = os.path.join(output_dir, output_filename)
@@ -83,7 +90,7 @@ def split_audio_file(
             "-ss",
             str(current_time),
             "-t",
-            str(duration),
+            str(min(duration, total_duration - current_time)),
             "-c",
             "copy",
             output_filepath,
