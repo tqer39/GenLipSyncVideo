@@ -118,7 +118,6 @@ def transcribe_audio(
     """
     for file in sorted(os.listdir(input_dir)):
         if file.endswith((".mp3", ".wav")):
-            input_file: str = os.path.join(input_dir, file)
             output_file: str = os.path.join(
                 output_dir, os.path.splitext(file)[0] + f".{extension}"
             )
