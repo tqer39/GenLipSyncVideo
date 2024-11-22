@@ -100,15 +100,17 @@ def main(args: Optional[Namespace] = None) -> None:
 
     raw_dir: str = f"./data/raw/{args.model_name}"
     separate_dir: str = os.path.join(raw_dir, "separate")
+    normalize_dir: str = os.path.join(raw_dir, "normalize_loudness")
     os.makedirs(separate_dir, exist_ok=True)
-    normalize_flag_file: str = os.path.join(separate_dir, ".normalized")
+    os.makedirs(normalize_dir, exist_ok=True)
+    normalize_flag_file: str = os.path.join(normalize_dir, ".normalized")
 
     if args.file_normalize_only:
         if os.path.exists(normalize_flag_file):
             print("ラウドネス正規化は既に適用されています。")
         else:
             # ラウドネス正規化を適用
-            normalize_loudness(separate_dir, separate_dir, args.loudness_target)
+            normalize_loudness(separate_dir, normalize_dir, args.loudness_target)
             with open(normalize_flag_file, "w") as f:
                 f.write("normalized")
         sys.exit(0)
@@ -142,7 +144,7 @@ def main(args: Optional[Namespace] = None) -> None:
 
     if not os.path.exists(normalize_flag_file):
         # ラウドネス正規化を適用
-        normalize_loudness(separate_dir, separate_dir, args.loudness_target)
+        normalize_loudness(separate_dir, normalize_dir, args.loudness_target)
         with open(normalize_flag_file, "w") as f:
             f.write("normalized")
 
