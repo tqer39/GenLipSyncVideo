@@ -30,3 +30,10 @@ python generate_custom_model.py --copy-source-raw-directory ./data/tmp \
 python generate_custom_model.py --copy-source-raw-directory ./data/tmp \
     --model-name model_name --start 0 --term 30 --overlay 5 --force
 ```
+
+### 音声データからテキストデータを生成（強制）
+
+```bash
+python generate_custom_model.py --copy-source-raw-directory ./data/tmp \
+    --model-name model_name --file-transcribe-only --force-transcribe
+```

@@ -45,6 +45,11 @@ def parse_arguments() -> argparse.ArgumentParser:
         help="[OPTION] 音声ファイルからテキストデータを抽出するのみを実行します。",
     )
     parser.add_argument(
+        "--force-transcribe",
+        action="store_true",
+        help="[OPTION] 既存のテキストファイルがある場合に強制的に上書きします。",
+    )
+    parser.add_argument(
         "--start",
         type=int,
         default=0,
@@ -99,21 +104,32 @@ def normalize_loudness(input_dir: str, output_dir: str, loudness_target: float) 
     subprocess.run(command, check=True)
 
 
-def transcribe_audio(input_dir: str, output_dir: str, extension: str) -> None:
+def transcribe_audio(
+    input_dir: str, output_dir: str, extension: str, force: bool
+) -> None:
     """
     音声ファイルからテキストデータを抽出し、同名のファイルに保存します。
     """
-    command = [
-        "python",
-        "scripts/speech_to_text.py",
-        "--input-dir",
-        input_dir,
-        "--output-dir",
-        output_dir,
-        "--extension",
-        extension,
-    ]
-    subprocess.run(command, check=True)
+    for file in sorted(os.listdir(input_dir)):
+        if file.endswith((".mp3", ".wav")):
+            input_file: str = os.path.join(input_dir, file)
+            output_file: str = os.path.join(
+                output_dir, os.path.splitext(file)[0] + f".{extension}"
+            )
+            if os.path.exists(output_file) and not force:
+                print(f"スキップされたファイル: {output_file}（既に存在します）")
+                continue
+            command = [
+                "python",
+                "scripts/speech_to_text.py",
+                "--input-dir",
+                input_dir,
+                "--output-dir",
+                output_dir,
+                "--extension",
+                extension,
+            ]
+            subprocess.run(command, check=True)
 
 
 def main(args: Optional[Namespace] = None) -> None:
@@ -147,7 +163,12 @@ def main(args: Optional[Namespace] = None) -> None:
 
     if args.file_transcribe_only:
         # 音声ファイルからテキストデータを抽出
-        transcribe_audio(normalize_dir, transcribe_dir, args.transcription_extension)
+        transcribe_audio(
+            normalize_dir,
+            transcribe_dir,
+            args.transcription_extension,
+            args.force_transcribe,
+        )
         sys.exit(0)
 
     if not args.file_separate_only:
@@ -184,7 +205,12 @@ def main(args: Optional[Namespace] = None) -> None:
             f.write("normalized")
 
     # 音声ファイルからテキストデータを抽出
-    transcribe_audio(normalize_dir, transcribe_dir, args.transcription_extension)
+    transcribe_audio(
+        normalize_dir,
+        transcribe_dir,
+        args.transcription_extension,
+        args.force_transcribe,
+    )
 
 
 if __name__ == "__main__":
