@@ -41,7 +41,7 @@ def format_time(seconds: int) -> str:
     秒数を hh:mm:ss の形式にフォーマットします。
     """
     td = timedelta(seconds=seconds)
-    return str(td)
+    return str(td).zfill(8)  # ゼロサプライして hh:mm:ss の形式にする
 
 
 def generate_output_filename(
