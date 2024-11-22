@@ -18,6 +18,7 @@ def parse_arguments() -> Namespace:
     parser.add_argument(
         "--force", action="store_true", help="既存ファイルを強制的に上書きします。"
     )
+    parser.add_argument("--output-dir", required=True, help="出力ディレクトリのパス")
     return parser.parse_args()
 
 
@@ -44,9 +45,13 @@ def get_audio_duration(input_file: str) -> int:
 
 
 def split_audio_file(
-    input_file: str, start_time: int, interval: int, overlay: int, force: bool
+    input_file: str,
+    output_dir: str,
+    start_time: int,
+    interval: int,
+    overlay: int,
+    force: bool,
 ) -> None:
-    output_dir: str = os.path.dirname(input_file)
     duration: int = interval + overlay
     total_duration: int = get_audio_duration(input_file)
 
@@ -107,7 +112,9 @@ def main(args: Optional[Namespace] = None) -> None:
     if args is None:
         args = parse_arguments()
 
-    split_audio_file(args.input, args.start, args.interval, args.overlay, args.force)
+    split_audio_file(
+        args.input, args.output_dir, args.start, args.interval, args.overlay, args.force
+    )
 
 
 if __name__ == "__main__":

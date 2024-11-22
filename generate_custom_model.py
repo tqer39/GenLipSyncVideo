@@ -81,6 +81,8 @@ def main(args: Optional[Namespace] = None) -> None:
                 "scripts/separate.py",
                 "--input",
                 input_file,
+                "--output-dir",
+                separate_dir,
                 "--start",
                 str(args.start),
                 "--interval",
