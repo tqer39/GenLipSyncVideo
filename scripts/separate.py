@@ -2,6 +2,7 @@ import os
 import argparse
 import subprocess
 from argparse import Namespace
+from typing import Optional
 
 
 def parse_arguments() -> Namespace:
@@ -12,21 +13,23 @@ def parse_arguments() -> Namespace:
     parser.add_argument("--start", type=int, default=0, help="分割開始時間（秒）")
     parser.add_argument("--interval", type=int, default=30, help="分割間隔（秒）")
     parser.add_argument("--overlay", type=int, default=5, help="分割の重なり（秒）")
-    parser.add_argument("--force", action="store_true", help="既存ファイルを強制的に上書きします。")
+    parser.add_argument(
+        "--force", action="store_true", help="既存ファイルを強制的に上書きします。"
+    )
     return parser.parse_args()
 
 
-def main(args=None):
+def main(args: Optional[Namespace] = None) -> None:
     if args is None:
         args = parse_arguments()
 
-    input_file = args.input
-    output_dir = os.path.dirname(input_file)
-    start_time = args.start
-    interval = args.interval
-    overlay = args.overlay
-    duration = interval + overlay
-    force = args.force
+    input_file: str = args.input
+    output_dir: str = os.path.dirname(input_file)
+    start_time: int = args.start
+    interval: int = args.interval
+    overlay: int = args.overlay
+    duration: int = interval + overlay
+    force: bool = args.force
 
     # 出力ディレクトリの存在確認
     if not os.path.isdir(output_dir):
@@ -37,15 +40,15 @@ def main(args=None):
         print(f"入力ファイルが見つかりません: {input_file}")
         return
 
-    segment_number = 1
-    current_time = start_time
+    segment_number: int = 1
+    current_time: int = start_time
 
     while True:
-        base_filename = os.path.splitext(os.path.basename(input_file))[0]
-        output_filename = f"{base_filename}_{segment_number:05d}.wav"
+        base_filename: str = os.path.splitext(os.path.basename(input_file))[0]
+        output_filename: str = f"{base_filename}_{segment_number:05d}.wav"
         if input_file.lower().endswith(".mp3"):
             output_filename = f"{base_filename}_{segment_number:05d}.mp3"
-        output_filepath = os.path.join(output_dir, output_filename)
+        output_filepath: str = os.path.join(output_dir, output_filename)
 
         if os.path.exists(output_filepath):
             if force:
@@ -56,7 +59,7 @@ def main(args=None):
                 current_time += interval
                 continue
 
-        command = [
+        command: list[str] = [
             "ffmpeg",
             "-i",
             input_file,
