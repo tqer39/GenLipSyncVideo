@@ -91,7 +91,7 @@ def split_audio_file(
     """
     音声ファイルを指定の間隔で分割し、出力ディレクトリに保存します。
     """
-    duration: int = interval + overlay
+    duration: int = interval
     total_duration: int = get_audio_duration(input_file)
 
     # 出力ディレクトリの存在確認
@@ -124,7 +124,7 @@ def split_audio_file(
             else:
                 print(f"スキップされたファイル: {output_filepath}（既に存在します）")
                 segment_number += 1
-                current_time += interval
+                current_time += interval - overlay
                 continue
 
         command: list[str] = [
@@ -144,7 +144,7 @@ def split_audio_file(
             break
         print(f"出力ファイル: {output_filepath}")
         segment_number += 1
-        current_time += interval
+        current_time += interval - overlay
 
 
 def main(args: Optional[Namespace] = None) -> None:
