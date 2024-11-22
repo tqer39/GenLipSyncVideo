@@ -129,14 +129,14 @@ huggingface-cli download fishaudio/fish-speech-1.4 --local-dir "$MODEL_DIR"
 # uv で必要なライブラリをインストール
 echo_info "uv でライブラリをインストール中..."
 uv add --dev --python "$PYTHON_VERSION" torch==2.4.1 torchvision==0.19.1 torchaudio==2.4.1 \
-    fish-audio-preprocess pydub
+    fish-audio-preprocess pydub whisper
 
 # セットアップ環境の確認
 echo_info "セットアップ環境の確認:"
 echo_info "Python バージョン: $(python -V)"
 echo_info "pip バージョン: $(pip -V)"
 echo_info "インストールされたライブラリ:"
-pip list | grep -E "torch|torchvision|torchaudio"
+pip list | grep -E "torch|torchvision|torchaudio|whisper"
 
 # 完了メッセージ
 echo_success "すべてのセットアップが完了しました！"
