@@ -60,6 +60,22 @@ def parse_arguments() -> argparse.ArgumentParser:
     return parser
 
 
+def normalize_loudness(input_dir: str, output_dir: str, force: bool) -> None:
+    """
+    ディレクトリ内の音声ファイルにラウドネス正規化を適用します。
+    """
+    command = [
+        "fap",
+        "loudness-norm",
+        input_dir,
+        output_dir,
+        "--clean",
+    ]
+    if force:
+        command.append("--overwrite")
+    subprocess.run(command, check=True)
+
+
 def main(args: Optional[Namespace] = None) -> None:
     """
     メイン関数。コマンドライン引数を解析し、音声ファイルのコピーと分割を実行します。
@@ -99,6 +115,9 @@ def main(args: Optional[Namespace] = None) -> None:
             if args.force:
                 command.append("--force")
             subprocess.run(command)
+
+    # ラウドネス正規化を適用
+    normalize_loudness(separate_dir, separate_dir, args.force)
 
 
 if __name__ == "__main__":
