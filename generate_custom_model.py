@@ -3,9 +3,11 @@ import sys
 import argparse
 import subprocess
 import os
+from argparse import Namespace
+from typing import Optional
 
 
-def parse_arguments():
+def parse_arguments() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="カスタムモデルを生成します。\n\n"
         "このスクリプトは指定された音声ファイルを分割し、"
@@ -55,7 +57,7 @@ def parse_arguments():
     return parser
 
 
-if __name__ == "__main__":
+def main(args: Optional[Namespace] = None) -> None:
     parser = parse_arguments()
     if len(sys.argv) == 1:
         parser.print_help()
@@ -67,13 +69,13 @@ if __name__ == "__main__":
         sys.exit(0)
 
     # separate.py を実行して音声データを分割
-    raw_dir = f"./data/raw/{args.model_name}"
-    separate_dir = os.path.join(raw_dir, "separate")
+    raw_dir: str = f"./data/raw/{args.model_name}"
+    separate_dir: str = os.path.join(raw_dir, "separate")
     os.makedirs(separate_dir, exist_ok=True)
 
     for file in sorted(os.listdir(raw_dir)):
         if file.endswith((".mp3", ".wav")):
-            input_file = os.path.join(raw_dir, file)
+            input_file: str = os.path.join(raw_dir, file)
             subprocess.run(
                 [
                     "python",
@@ -89,3 +91,7 @@ if __name__ == "__main__":
                     "--force" if args.force else "",
                 ]
             )
+
+
+if __name__ == "__main__":
+    main()
