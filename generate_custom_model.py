@@ -85,6 +85,12 @@ def parse_arguments() -> argparse.ArgumentParser:
         default="lab",
         help="[OPTION] 出力テキストファイルの拡張子。デフォルトは 'lab' です。",
     )
+    parser.add_argument(
+        "--whisper-model-name",
+        type=str,
+        default="base",
+        help="[OPTION] Whisper で使用するモデル。デフォルトは 'base' です。",
+    )
     return parser
 
 
@@ -105,7 +111,7 @@ def normalize_loudness(input_dir: str, output_dir: str, loudness_target: float) 
 
 
 def transcribe_audio(
-    input_dir: str, output_dir: str, extension: str, force: bool
+    input_dir: str, output_dir: str, extension: str, force: bool, model_name: str
 ) -> None:
     """
     音声ファイルからテキストデータを抽出し、同名のファイルに保存します。
@@ -128,6 +134,8 @@ def transcribe_audio(
                 output_dir,
                 "--extension",
                 extension,
+                "--whisper-model-name",
+                model_name,
             ]
             subprocess.run(command, check=True)
 
@@ -168,6 +176,7 @@ def main(args: Optional[Namespace] = None) -> None:
             transcribe_dir,
             args.transcription_extension,
             args.force_transcribe,
+            args.whisper_model_name,
         )
         sys.exit(0)
 
@@ -210,6 +219,7 @@ def main(args: Optional[Namespace] = None) -> None:
         transcribe_dir,
         args.transcription_extension,
         args.force_transcribe,
+        args.whisper_model_name,
     )
 
 

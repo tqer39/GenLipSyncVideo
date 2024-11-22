@@ -26,14 +26,20 @@ def parse_arguments() -> Namespace:
         default="lab",
         help="[OPTION] 出力ファイルの拡張子。デフォルトは 'lab' です。",
     )
+    parser.add_argument(
+        "--whisper-model-name",
+        type=str,
+        default="base",
+        help="[OPTION] Whisper で使用するモデル。デフォルトは 'base' です。",
+    )
     return parser.parse_args()
 
 
-def speech_to_text(input_file: str) -> str:
+def speech_to_text(input_file: str, model_name: str) -> str:
     """
     音声ファイルからテキストデータを抽出します。
     """
-    model = whisper.load_model("base")
+    model = whisper.load_model(model_name)
     result = model.transcribe(input_file, language="ja")
     return result["text"]
 
@@ -53,7 +59,7 @@ def main(args: Optional[Namespace] = None) -> None:
             output_file: str = os.path.join(
                 args.output_dir, os.path.splitext(file)[0] + f".{args.extension}"
             )
-            text: str = speech_to_text(input_file)
+            text: str = speech_to_text(input_file, args.whisper_model_name)
             with open(output_file, "w") as f:
                 f.write(text)
             print(f"テキストデータを保存しました: {output_file}")
