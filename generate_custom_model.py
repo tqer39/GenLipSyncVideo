@@ -40,6 +40,11 @@ def parse_arguments() -> argparse.ArgumentParser:
         help="[OPTION] ファイル正規化のみを実行します。",
     )
     parser.add_argument(
+        "--file-transcribe-only",
+        action="store_true",
+        help="[OPTION] 音声ファイルからテキストデータを抽出するのみを実行します。",
+    )
+    parser.add_argument(
         "--start",
         type=int,
         default=0,
@@ -88,6 +93,21 @@ def normalize_loudness(input_dir: str, output_dir: str, loudness_target: float) 
     subprocess.run(command, check=True)
 
 
+def transcribe_audio(input_dir: str, output_dir: str) -> None:
+    """
+    音声ファイルからテキストデータを抽出し、同名の .lab ファイルに保存します。
+    """
+    command = [
+        "python",
+        "scripts/speech_to_text.py",
+        "--input-dir",
+        input_dir,
+        "--output-dir",
+        output_dir,
+    ]
+    subprocess.run(command, check=True)
+
+
 def main(args: Optional[Namespace] = None) -> None:
     """
     メイン関数。コマンドライン引数を解析し、音声ファイルのコピーと分割を実行します。
@@ -101,8 +121,10 @@ def main(args: Optional[Namespace] = None) -> None:
     raw_dir: str = f"./data/raw/{args.model_name}"
     separate_dir: str = os.path.join(raw_dir, "separate")
     normalize_dir: str = os.path.join(raw_dir, "normalize_loudness")
+    transcribe_dir: str = os.path.join(raw_dir, "transcriptions")
     os.makedirs(separate_dir, exist_ok=True)
     os.makedirs(normalize_dir, exist_ok=True)
+    os.makedirs(transcribe_dir, exist_ok=True)
     normalize_flag_file: str = os.path.join(normalize_dir, ".normalized")
 
     if args.file_normalize_only:
@@ -113,6 +135,11 @@ def main(args: Optional[Namespace] = None) -> None:
             normalize_loudness(separate_dir, normalize_dir, args.loudness_target)
             with open(normalize_flag_file, "w") as f:
                 f.write("normalized")
+        sys.exit(0)
+
+    if args.file_transcribe_only:
+        # 音声ファイルからテキストデータを抽出
+        transcribe_audio(normalize_dir, transcribe_dir)
         sys.exit(0)
 
     if not args.file_separate_only:
@@ -147,6 +174,9 @@ def main(args: Optional[Namespace] = None) -> None:
         normalize_loudness(separate_dir, normalize_dir, args.loudness_target)
         with open(normalize_flag_file, "w") as f:
             f.write("normalized")
+
+    # 音声ファイルからテキストデータを抽出
+    transcribe_audio(normalize_dir, transcribe_dir)
 
 
 if __name__ == "__main__":
