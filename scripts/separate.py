@@ -3,6 +3,7 @@ import argparse
 import subprocess
 from argparse import Namespace
 from typing import Optional
+from datetime import timedelta
 
 
 def parse_arguments() -> Namespace:
@@ -17,6 +18,11 @@ def parse_arguments() -> Namespace:
         "--force", action="store_true", help="既存ファイルを強制的に上書きします。"
     )
     return parser.parse_args()
+
+
+def format_time(seconds: int) -> str:
+    td = timedelta(seconds=seconds)
+    return str(td)
 
 
 def main(args: Optional[Namespace] = None) -> None:
@@ -45,9 +51,10 @@ def main(args: Optional[Namespace] = None) -> None:
 
     while True:
         base_filename: str = os.path.splitext(os.path.basename(input_file))[0]
-        output_filename: str = f"{base_filename}_{segment_number:05d}.wav"
-        if input_file.lower().endswith(".mp3"):
-            output_filename = f"{base_filename}_{segment_number:05d}.mp3"
+        file_extension: str = os.path.splitext(input_file)[1]
+        start_time_str: str = format_time(current_time).replace(":", "-")
+        end_time_str: str = format_time(current_time + duration).replace(":", "-")
+        output_filename: str = f"{base_filename}_{segment_number:05d}_{start_time_str}~{end_time_str}{file_extension}"
         output_filepath: str = os.path.join(output_dir, output_filename)
 
         if os.path.exists(output_filepath):
