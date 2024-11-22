@@ -4,7 +4,6 @@ import subprocess
 from argparse import Namespace
 from typing import Optional
 from datetime import timedelta
-import ffmpeg
 
 
 def parse_arguments() -> Namespace:
@@ -40,8 +39,21 @@ def generate_output_filename(
 
 
 def get_audio_duration(input_file: str) -> int:
-    probe = ffmpeg.probe(input_file)
-    return int(float(probe["format"]["duration"]))
+    result = subprocess.run(
+        [
+            "ffprobe",
+            "-v",
+            "error",
+            "-show_entries",
+            "format=duration",
+            "-of",
+            "default=noprint_wrappers=1:nokey=1",
+            input_file,
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    return int(float(result.stdout))
 
 
 def split_audio_file(

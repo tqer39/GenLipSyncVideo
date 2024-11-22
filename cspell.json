@@ -19,6 +19,8 @@
     "libportaudiocpp",
     "libsox",
     "linuxbrew",
+    "nokey",
+    "noprint",
     "portaudio",
     "pydub",
     "pyenv",
