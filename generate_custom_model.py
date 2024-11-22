@@ -35,6 +35,11 @@ def parse_arguments() -> argparse.ArgumentParser:
         help="[OPTION] ファイル分割のみを実行します。",
     )
     parser.add_argument(
+        "--file-normalize-only",
+        action="store_true",
+        help="[OPTION] ファイル正規化のみを実行します。",
+    )
+    parser.add_argument(
         "--start",
         type=int,
         default=0,
@@ -85,16 +90,22 @@ def main(args: Optional[Namespace] = None) -> None:
         parser.print_help()
         sys.exit(1)
     args = parser.parse_args()
+
+    raw_dir: str = f"./data/raw/{args.model_name}"
+    separate_dir: str = os.path.join(raw_dir, "separate")
+    os.makedirs(separate_dir, exist_ok=True)
+
+    if args.file_normalize_only:
+        # ラウドネス正規化を適用
+        normalize_loudness(separate_dir, separate_dir, args.force)
+        sys.exit(0)
+
     if not args.file_separate_only:
         create_and_copy_data.main(args)
     if args.file_copy_only:
         sys.exit(0)
 
     # separate.py を実行して音声データを分割
-    raw_dir: str = f"./data/raw/{args.model_name}"
-    separate_dir: str = os.path.join(raw_dir, "separate")
-    os.makedirs(separate_dir, exist_ok=True)
-
     for file in sorted(os.listdir(raw_dir)):
         if file.endswith((".mp3", ".wav")):
             input_file: str = os.path.join(raw_dir, file)
