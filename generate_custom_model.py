@@ -65,7 +65,7 @@ def parse_arguments() -> argparse.ArgumentParser:
     return parser
 
 
-def normalize_loudness(input_dir: str, output_dir: str, force: bool) -> None:
+def normalize_loudness(input_dir: str, output_dir: str) -> None:
     """
     ディレクトリ内の音声ファイルにラウドネス正規化を適用します。
     """
@@ -74,10 +74,8 @@ def normalize_loudness(input_dir: str, output_dir: str, force: bool) -> None:
         "loudness-norm",
         input_dir,
         output_dir,
-        "--clean",
+        "--overwrite",
     ]
-    if force:
-        command.append("--overwrite")
     subprocess.run(command, check=True)
 
 
@@ -94,10 +92,16 @@ def main(args: Optional[Namespace] = None) -> None:
     raw_dir: str = f"./data/raw/{args.model_name}"
     separate_dir: str = os.path.join(raw_dir, "separate")
     os.makedirs(separate_dir, exist_ok=True)
+    normalize_flag_file: str = os.path.join(separate_dir, ".normalized")
 
     if args.file_normalize_only:
-        # ラウドネス正規化を適用
-        normalize_loudness(separate_dir, separate_dir, args.force)
+        if os.path.exists(normalize_flag_file):
+            print("ラウドネス正規化は既に適用されています。")
+        else:
+            # ラウドネス正規化を適用
+            normalize_loudness(separate_dir, separate_dir)
+            with open(normalize_flag_file, "w") as f:
+                f.write("normalized")
         sys.exit(0)
 
     if not args.file_separate_only:
@@ -127,8 +131,11 @@ def main(args: Optional[Namespace] = None) -> None:
                 command.append("--force")
             subprocess.run(command)
 
-    # ラウドネス正規化を適用
-    normalize_loudness(separate_dir, separate_dir, args.force)
+    if not os.path.exists(normalize_flag_file):
+        # ラウドネス正規化を適用
+        normalize_loudness(separate_dir, separate_dir)
+        with open(normalize_flag_file, "w") as f:
+            f.write("normalized")
 
 
 if __name__ == "__main__":
