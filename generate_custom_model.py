@@ -76,21 +76,21 @@ def main(args: Optional[Namespace] = None) -> None:
     for file in sorted(os.listdir(raw_dir)):
         if file.endswith((".mp3", ".wav")):
             input_file: str = os.path.join(raw_dir, file)
-            subprocess.run(
-                [
-                    "python",
-                    "scripts/separate.py",
-                    "--input",
-                    input_file,
-                    "--start",
-                    str(args.start),
-                    "--interval",
-                    str(args.term),
-                    "--overlay",
-                    str(args.overlay),
-                    "--force" if args.force else "",
-                ]
-            )
+            command: list[str] = [
+                "python",
+                "scripts/separate.py",
+                "--input",
+                input_file,
+                "--start",
+                str(args.start),
+                "--interval",
+                str(args.term),
+                "--overlay",
+                str(args.overlay),
+            ]
+            if args.force:
+                command.append("--force")
+            subprocess.run(command)
 
 
 if __name__ == "__main__":
