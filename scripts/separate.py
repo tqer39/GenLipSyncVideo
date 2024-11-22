@@ -25,6 +25,12 @@ def format_time(seconds: int) -> str:
     return str(td)
 
 
+def generate_output_filename(base_filename: str, segment_number: int, start_time: int, end_time: int, file_extension: str) -> str:
+    start_time_str: str = format_time(start_time).replace(":", "-")
+    end_time_str: str = format_time(end_time).replace(":", "-")
+    return f"{base_filename}_{segment_number:05d}_{start_time_str}~{end_time_str}{file_extension}"
+
+
 def main(args: Optional[Namespace] = None) -> None:
     if args is None:
         args = parse_arguments()
@@ -52,9 +58,7 @@ def main(args: Optional[Namespace] = None) -> None:
     while True:
         base_filename: str = os.path.splitext(os.path.basename(input_file))[0]
         file_extension: str = os.path.splitext(input_file)[1]
-        start_time_str: str = format_time(current_time).replace(":", "-")
-        end_time_str: str = format_time(current_time + duration).replace(":", "-")
-        output_filename: str = f"{base_filename}_{segment_number:05d}_{start_time_str}~{end_time_str}{file_extension}"
+        output_filename: str = generate_output_filename(base_filename, segment_number, current_time, current_time + duration, file_extension)
         output_filepath: str = os.path.join(output_dir, output_filename)
 
         if os.path.exists(output_filepath):
