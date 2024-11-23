@@ -91,6 +91,11 @@ def parse_arguments() -> argparse.ArgumentParser:
         default="base",
         help="[OPTION] Whisper で使用するモデル。デフォルトは 'base' です。",
     )
+    parser.add_argument(
+        "--force-file-copy",
+        action="store_true",
+        help="[OPTION] ファイルコピーを強制します。",
+    )
     return parser
 
 
@@ -180,6 +185,8 @@ def main(args: Optional[Namespace] = None) -> None:
         sys.exit(0)
 
     if not args.file_separate_only:
+        if args.file_copy_only:
+            args.force = args.force_file_copy
         create_and_copy_data.main(args)
     if args.file_copy_only:
         sys.exit(0)

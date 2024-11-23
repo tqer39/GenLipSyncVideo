@@ -14,7 +14,7 @@ def parse_arguments() -> Namespace:
     )
     parser.add_argument("--model-name", required=True, help="コピー先のディレクトリ名")
     parser.add_argument(
-        "--force",
+        "--force-file-copy",
         action="store_true",
         help="同名のファイルがある場合に強制的に上書きします。",
     )
@@ -31,7 +31,7 @@ def main(args=None):
         for file in os.listdir(args.copy_source_raw_directory):
             if file.endswith((".mp3", ".wav")):
                 dest_file = os.path.join(raw_dir, file)
-                if os.path.exists(dest_file) and not args.force:
+                if os.path.exists(dest_file) and not args.force_file_copy:
                     print(f"スキップされたファイル: {dest_file}（既に存在します）")
                 else:
                     shutil.copy(
