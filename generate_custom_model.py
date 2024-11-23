@@ -1,4 +1,5 @@
 import scripts.create_and_copy_data as create_and_copy_data
+import scripts.separate as separate
 import sys
 import argparse
 import subprocess
@@ -234,23 +235,15 @@ def main(args: Optional[Namespace] = None) -> None:
     for file in sorted(os.listdir(raw_dir)):
         if file.endswith((".mp3", ".wav")):
             input_file: str = os.path.join(raw_dir, file)
-            command: list[str] = [
-                "python",
-                "scripts/separate.py",
-                "--input",
-                input_file,
-                "--output-dir",
-                separate_dir,
-                "--start",
-                str(args.start),
-                "--interval",
-                str(args.term),
-                "--overlay",
-                str(args.overlay),
-            ]
-            if args.file_separate_only:
-                command.append("--force")
-            subprocess.run(command)
+            separate_args = Namespace(
+                input=input_file,
+                output_dir=separate_dir,
+                start=args.start,
+                interval=args.term,
+                overlay=args.overlay,
+                force=args.file_separate_only,
+            )
+            separate.main(separate_args)
 
     if not os.path.exists(normalize_flag_file):
         # ラウドネス正規化を適用
