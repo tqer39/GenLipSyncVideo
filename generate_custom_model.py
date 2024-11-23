@@ -30,14 +30,14 @@ def parse_arguments() -> argparse.ArgumentParser:
         help="[OPTION] ファイルコピーのみを実行します。",
     )
     parser.add_argument(
-        "--file-separate-only",
-        action="store_true",
-        help="[OPTION] ファイル分割のみを実行します。",
-    )
-    parser.add_argument(
         "--file-normalize-only",
         action="store_true",
         help="[OPTION] ファイル正規化のみを実行します。",
+    )
+    parser.add_argument(
+        "--file-separate-only",
+        action="store_true",
+        help="[OPTION] ファイル分割のみを実行します。",
     )
     parser.add_argument(
         "--file-transcribe-only",
@@ -45,51 +45,9 @@ def parse_arguments() -> argparse.ArgumentParser:
         help="[OPTION] 音声ファイルからテキストデータを抽出するのみを実行します。",
     )
     parser.add_argument(
-        "--force-transcribe",
-        action="store_true",
-        help="[OPTION] 既存のテキストファイルがある場合に強制的に上書きします。",
-    )
-    parser.add_argument(
-        "--start",
-        type=int,
-        default=0,
-        help="[OPTION] 分割の開始位置（秒）。デフォルトは 0 です。",
-    )
-    parser.add_argument(
-        "--term",
-        type=int,
-        default=30,
-        help="[OPTION] 分割の間隔（秒）。デフォルトは 30 です。",
-    )
-    parser.add_argument(
-        "--overlay",
-        type=int,
-        default=5,
-        help="[OPTION] 分割の重なり（秒）。デフォルトは 5 です。",
-    )
-    parser.add_argument(
         "--force",
         action="store_true",
         help="[OPTION] 同名のファイルがある場合に強制的に上書きします。",
-    )
-    parser.add_argument(
-        "--loudness-target",
-        type=float,
-        default=-23.0,
-        help="[OPTION] ラウドネス正規化のターゲット値（dB LUFS）。デフォルトは -23.0 dB LUFS です。"
-        "ターゲット値を上げると音量が大きくなり、下げると音量が小さくなります。",
-    )
-    parser.add_argument(
-        "--transcription-extension",
-        type=str,
-        default="lab",
-        help="[OPTION] 出力テキストファイルの拡張子。デフォルトは 'lab' です。",
-    )
-    parser.add_argument(
-        "--whisper-model-name",
-        type=str,
-        default="base",
-        help="[OPTION] Whisper で使用するモデル。デフォルトは 'base' です。",
     )
     parser.add_argument(
         "--force-file-copy",
@@ -105,6 +63,48 @@ def parse_arguments() -> argparse.ArgumentParser:
         "--force-normalize-loudness",
         action="store_true",
         help="[OPTION] ラウドネス正規化を強制します。",
+    )
+    parser.add_argument(
+        "--force-transcribe",
+        action="store_true",
+        help="[OPTION] 既存のテキストファイルがある場合に強制的に上書きします。",
+    )
+    parser.add_argument(
+        "--loudness-target",
+        type=float,
+        default=-23.0,
+        help="[OPTION] ラウドネス正規化のターゲット値（dB LUFS）。デフォルトは -23.0 dB LUFS です。"
+        "ターゲット値を上げると音量が大きくなり、下げると音量が小さくなります。",
+    )
+    parser.add_argument(
+        "--overlay",
+        type=int,
+        default=5,
+        help="[OPTION] 分割の重なり（秒）。デフォルトは 5 です。",
+    )
+    parser.add_argument(
+        "--start",
+        type=int,
+        default=0,
+        help="[OPTION] 分割の開始位置（秒）。デフォルトは 0 です。",
+    )
+    parser.add_argument(
+        "--term",
+        type=int,
+        default=30,
+        help="[OPTION] 分割の間隔（秒）。デフォルトは 30 です。",
+    )
+    parser.add_argument(
+        "--transcription-extension",
+        type=str,
+        default="lab",
+        help="[OPTION] 出力テキストファイルの拡張子。デフォルトは 'lab' です。",
+    )
+    parser.add_argument(
+        "--whisper-model-name",
+        type=str,
+        default="base",
+        help="[OPTION] Whisper で使用するモデル。デフォルトは 'base' です。",
     )
     return parser
 

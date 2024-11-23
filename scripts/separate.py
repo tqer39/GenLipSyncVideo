@@ -17,7 +17,12 @@ def parse_arguments() -> Namespace:
         "--input", required=True, help="[REQUIRED] 入力音声ファイルのパス"
     )
     parser.add_argument(
-        "--start", type=int, default=0, help="[OPTION] 分割開始時間（秒）"
+        "--output-dir", required=True, help="[REQUIRED] 出力ディレクトリのパス"
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="[OPTION] 既存ファイルを強制的に上書きします。",
     )
     parser.add_argument(
         "--interval", type=int, default=30, help="[OPTION] 分割間隔（秒）"
@@ -26,12 +31,7 @@ def parse_arguments() -> Namespace:
         "--overlay", type=int, default=5, help="[OPTION] 分割の重なり（秒）"
     )
     parser.add_argument(
-        "--force",
-        action="store_true",
-        help="[OPTION] 既存ファイルを強制的に上書きします。",
-    )
-    parser.add_argument(
-        "--output-dir", required=True, help="[REQUIRED] 出力ディレクトリのパス"
+        "--start", type=int, default=0, help="[OPTION] 分割開始時間（秒）"
     )
     return parser.parse_args()
 
