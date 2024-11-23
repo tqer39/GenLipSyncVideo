@@ -153,7 +153,7 @@ def transcribe_audio(
             print(f"テキストの内容: {text}")
 
 
-def run_finetune_processing(finetune_dir: str) -> None:
+def prepare_finetune(finetune_dir: str) -> None:
     """
     finetune フォルダ内で処理を実行します。
     """
@@ -216,7 +216,7 @@ def main(args: Optional[Namespace] = None) -> None:
         sys.exit(0)
 
     if args.finetune_only:
-        run_finetune_processing(finetune_dir)
+        prepare_finetune(finetune_dir)
         sys.exit(0)
 
     if not args.file_separate_only:
@@ -271,7 +271,7 @@ def main(args: Optional[Namespace] = None) -> None:
             sys.exit(0)
 
     # finetune フォルダ内で処理を実行
-    run_finetune_processing(finetune_dir)
+    prepare_finetune(finetune_dir)
 
 
 if __name__ == "__main__":
