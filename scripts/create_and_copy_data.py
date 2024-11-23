@@ -11,11 +11,11 @@ def parse_arguments() -> Namespace:
     parser = argparse.ArgumentParser(
         description="音声ファイルを指定のディレクトリにコピーします。"
     )
-    parser.add_argument("--model-name", required=True, help="コピー先のディレクトリ名")
     parser.add_argument(
         "--copy-source-raw-directory",
         help="元になる音声ファイル（mp3, wav など）のパスを指定するディレクトリ",
     )
+    parser.add_argument("--model-name", required=True, help="コピー先のディレクトリ名")
     parser.add_argument(
         "--force-file-copy",
         action="store_true",
