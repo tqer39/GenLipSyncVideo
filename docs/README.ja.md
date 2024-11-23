@@ -18,7 +18,7 @@ bash setup
 ## サンプルデータを通常の使い方
 
 ```bash
-python generate_custom_model.py --model-name model_name \
+python preparation_before_fine-tuning.py --model-name model_name \
     --copy-source-raw-directory ./data/tmp
 ```
 
@@ -39,27 +39,27 @@ python generate_custom_model.py --model-name model_name \
 ### ファイルコピーのみ実行
 
 ```bash
-python generate_custom_model.py --copy-source-raw-directory ./data/tmp \
+python preparation_before_fine-tuning.py --copy-source-raw-directory ./data/tmp \
     --model-name model_name --file-copy-only
 ```
 
 ### ファイルコピーと分割実行
 
 ```bash
-python generate_custom_model.py --copy-source-raw-directory ./data/tmp \
+python preparation_before_fine-tuning.py --copy-source-raw-directory ./data/tmp \
     --model-name model_name --start 0 --term 30 --overlay 5
 ```
 
 ### 音声データからテキストデータを生成（強制）
 
 ```bash
-python generate_custom_model.py --copy-source-raw-directory ./data/tmp \
+python preparation_before_fine-tuning.py --copy-source-raw-directory ./data/tmp \
     --model-name model_name --file-transcribe-only --force-transcribe
 ```
 
 ### 音声データからテキストデータを生成（強制）（Whisper のモデルを指定）
 
 ```bash
-python generate_custom_model.py --copy-source-raw-directory ./data/tmp \
+python preparation_before_fine-tuning.py --copy-source-raw-directory ./data/tmp \
     --model-name model_name --file-transcribe-only --force-transcribe --whisper-model-name small
 ```
