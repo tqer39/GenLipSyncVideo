@@ -27,7 +27,9 @@ def prepare_before_text_reformatting(model_name: str, force: bool) -> None:
     """
     fine tuning 前のデータセットを作成します。
     """
-    before_text_reformatting_dir = os.path.join(f"./data/{model_name}", "before_text_reformatting")
+    before_text_reformatting_dir = os.path.join(
+        f"./data/{model_name}", "before_text_reformatting"
+    )
     normalize_dir = os.path.join(f"./data/{model_name}", "normalize_loudness")
     transcribe_dir = os.path.join(f"./data/{model_name}", "transcriptions")
     os.makedirs(before_text_reformatting_dir, exist_ok=True)
@@ -35,8 +37,11 @@ def prepare_before_text_reformatting(model_name: str, force: bool) -> None:
     for file in sorted(os.listdir(normalize_dir)):
         if file.endswith((".mp3", ".wav")):
             base_name, ext = os.path.splitext(file)
-            segment_number = base_name.split('_')[-1]
-            segment_dir = os.path.join(before_text_reformatting_dir, segment_number)
+            segment_number = base_name.split("_")[-2]
+            time_part = base_name.split("_")[-1]
+            segment_dir = os.path.join(
+                before_text_reformatting_dir, f"{segment_number}_{time_part}"
+            )
             os.makedirs(segment_dir, exist_ok=True)
 
             audio_src = os.path.join(normalize_dir, file)
@@ -64,7 +69,9 @@ def main(args: Optional[Namespace] = None) -> None:
     if args is None:
         args = parse_arguments()
 
-    prepare_before_text_reformatting(args.model_name, args.force_before_text_reformatting)
+    prepare_before_text_reformatting(
+        args.model_name, args.force_before_text_reformatting
+    )
 
 
 if __name__ == "__main__":
