@@ -101,6 +101,11 @@ def parse_arguments() -> argparse.ArgumentParser:
         action="store_true",
         help="[OPTION] ファイル分割を強制します。",
     )
+    parser.add_argument(
+        "--force-normalize-loudness",
+        action="store_true",
+        help="[OPTION] ラウドネス正規化を強制します。",
+    )
     return parser
 
 
@@ -169,7 +174,7 @@ def main(args: Optional[Namespace] = None) -> None:
     normalize_flag_file: str = os.path.join(normalize_dir, ".normalized")
 
     if args.file_normalize_only:
-        if os.path.exists(normalize_flag_file):
+        if os.path.exists(normalize_flag_file) and not args.force_normalize_loudness:
             print("ラウドネス正規化は既に適用されています。")
         else:
             # ラウドネス正規化を適用
