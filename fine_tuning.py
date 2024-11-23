@@ -21,6 +21,10 @@ def parse_arguments() -> argparse.Namespace:
         action="store_true",
         help="[OPTION] finetune の処理のみを実行します。",
     )
+    parser.add_argument(
+        "--override-path",
+        help="[OPTION] 処理対象のディレクトリを指定します。デフォルトは './data/{model_name}/before_text_reformatting' です。",
+    )
     return parser.parse_args()
 
 
@@ -50,9 +54,17 @@ def main(args: Optional[Namespace] = None) -> None:
     """
     if args is None:
         args = parse_arguments()
-    finetune_dir: str = os.path.join(f"./data/{args.model_name}", "finetune")
+    finetune_dir: str = os.path.join(
+        f"./data/{args.model_name}", "before_text_reformatting"
+    )
     os.makedirs(finetune_dir, exist_ok=True)
 
     if args.finetune_only:
         finetune(finetune_dir)
+
         sys.exit(0)
+
+    target_dir = (
+        args.override_path or f"./data/{args.model_name}/before_text_reformatting"
+    )
+    finetune(target_dir)
