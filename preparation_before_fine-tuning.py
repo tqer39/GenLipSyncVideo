@@ -1,12 +1,14 @@
 import scripts.create_and_copy_data as create_and_copy_data
 import scripts.separate as separate
 import scripts.speech_to_text as speech_to_text  # インポートを追加
+import scripts.prepare_before_text_reformatting as prepare_before_text_reformatting  # インポートを追加
 import sys
 import argparse
 import subprocess
 import os
 from argparse import Namespace
 from typing import Optional
+import shutil
 
 
 def parse_arguments() -> argparse.ArgumentParser:
@@ -103,12 +105,22 @@ def parse_arguments() -> argparse.ArgumentParser:
         action="store_true",
         help="[OPTION] ラウドネス正規化を強制します。",
     )
+    parser.add_argument(
+        "--file-before-text-reformatting-only",
+        action="store_true",
+        help="[OPTION] before_text_reformatting のみを実行します。",
+    )
+    parser.add_argument(
+        "--force-before-text-reformatting",
+        action="store_true",
+        help="[OPTION] before_text_reformatting を強制します。",
+    )
     return parser
 
 
 def normalize_loudness(input_dir: str, output_dir: str, loudness_target: float) -> None:
     """
-    ディレクトリ内の音声ファイルにラウドネス正規化を適用します。
+    ディレク���リ内の音声ファイルにラウドネス正規化を適用します。
     """
     command = [
         "fap",
@@ -229,6 +241,16 @@ def main(args: Optional[Namespace] = None) -> None:
         )
         sys.exit(0)
 
+    # セマンティックトークンを払い出す前の前処理のみを実行
+    if args.file_before_text_reformatting_only:
+        prepare_before_text_reformatting.main(
+            Namespace(
+                model_name=args.model_name,
+                force_before_text_reformatting=args.force_before_text_reformatting,
+            )
+        )
+        sys.exit(0)
+
     # ファイルコピーから実行
     if args.copy_source_raw_directory is None:
         print("コピー元のディレクトリが指定されていません。")
@@ -275,6 +297,14 @@ def main(args: Optional[Namespace] = None) -> None:
         args.transcription_extension,
         args.force_transcribe,
         args.whisper_model_name,
+    )
+
+    # before_text_reformatting の準備
+    prepare_before_text_reformatting.main(
+        Namespace(
+            model_name=args.model_name,
+            force_before_text_reformatting=args.force_before_text_reformatting,
+        )
     )
 
 
