@@ -1,5 +1,6 @@
 import scripts.create_and_copy_data as create_and_copy_data
 import scripts.separate as separate
+import scripts.speech_to_text as speech_to_text  # インポートを追加
 import sys
 import argparse
 import subprocess
@@ -143,19 +144,13 @@ def transcribe_audio(
                 else:
                     print(f"スキップされたファイル: {output_file}（既に存在します）")
                     continue
-            command = [
-                "python",
-                "scripts/speech_to_text.py",
-                "--input-dir",
-                input_dir,
-                "--output-dir",
-                output_dir,
-                "--extension",
-                extension,
-                "--whisper-model-name",
-                model_name,
-            ]
-            subprocess.run(command, check=True)
+            text: str = speech_to_text.speech_to_text(
+                os.path.join(input_dir, file), model_name
+            )
+            with open(output_file, "w") as f:
+                f.write(text)
+            print(f"テキストデータを保存しました: {output_file}")
+            print(f"テキストの内容: {text}")
 
 
 def run_finetune_processing(finetune_dir: str) -> None:
