@@ -270,9 +270,9 @@ def main(args: Optional[Namespace] = None) -> None:
     # ファイルを分割
     for file in sorted(os.listdir(raw_dir)):
         if file.endswith((".mp3", ".wav")):
-            input_file: str = os.path.join(raw_dir, file)
+            input_file2: str = os.path.join(raw_dir, file)
             separate_args = Namespace(
-                input=input_file,
+                input=input_file2,
                 output_dir=separate_dir,
                 start=args.start,
                 interval=args.term,
