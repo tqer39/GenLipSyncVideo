@@ -106,6 +106,11 @@ def parse_arguments() -> argparse.ArgumentParser:
         action="store_true",
         help="[OPTION] ラウドネス正規化を強制します。",
     )
+    parser.add_argument(
+        "--finetune-only",
+        action="store_true",
+        help="[OPTION] finetune の処理のみを実行します。",
+    )
     return parser
 
 
@@ -169,7 +174,7 @@ def run_finetune_processing(finetune_dir: str) -> None:
         "--config-name",
         "firefly_gan_vq",
         "--checkpoint-path",
-        f"checkpoints/fish-speech-1.4/firefly-gan-vq-fsq-8x1024-21hz-generator.pth",
+        "checkpoints/fish-speech-1.4/firefly-gan-vq-fsq-8x1024-21hz-generator.pth",
     ]
     subprocess.run(command, check=True)
 
@@ -214,6 +219,10 @@ def main(args: Optional[Namespace] = None) -> None:
             args.force_transcribe,
             args.whisper_model_name,
         )
+        sys.exit(0)
+
+    if args.finetune_only:
+        run_finetune_processing(finetune_dir)
         sys.exit(0)
 
     if not args.file_separate_only:
