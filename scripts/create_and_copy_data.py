@@ -26,7 +26,7 @@ def main(args=None):
         args = parse_arguments()
 
     if args.copy_source_raw_directory:
-        raw_dir = os.path.join("./data/raw", args.model_name)
+        raw_dir = os.path.join(f"./data/{args.model_name}", "raw")
         os.makedirs(raw_dir, exist_ok=True)
         for file in os.listdir(args.copy_source_raw_directory):
             if file.endswith((".mp3", ".wav")):

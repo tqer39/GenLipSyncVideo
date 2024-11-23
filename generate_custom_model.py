@@ -149,10 +149,10 @@ def main(args: Optional[Namespace] = None) -> None:
         sys.exit(1)
     args = parser.parse_args()
 
-    raw_dir: str = f"./data/raw/{args.model_name}"
+    raw_dir: str = f"./data/{args.model_name}/raw"
     separate_dir: str = os.path.join(raw_dir, "separate")
-    normalize_dir: str = os.path.join(raw_dir, "normalize_loudness")
-    transcribe_dir: str = os.path.join(raw_dir, "transcriptions")
+    normalize_dir: str = os.path.join(f"./data/{args.model_name}", "normalize_loudness")
+    transcribe_dir: str = os.path.join(f"./data/{args.model_name}", "transcriptions")
     os.makedirs(separate_dir, exist_ok=True)
     os.makedirs(normalize_dir, exist_ok=True)
     os.makedirs(transcribe_dir, exist_ok=True)
