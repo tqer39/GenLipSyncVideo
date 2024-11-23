@@ -242,7 +242,13 @@ def main(args: Optional[Namespace] = None) -> None:
 
     # 処理継続の確認
     while True:
-        user_input = input("処理を継続しますか？ (y/N): ").strip().lower()
+        user_input = (
+            input(
+                "処理を継続しますか？ (y/N): finetune フォルダに音声データとテキストデータのセットを保存してから y キーを押してください。"
+            )
+            .strip()
+            .lower()
+        )
         if user_input == "y":
             break
         elif user_input == "n" or user_input == "":
