@@ -141,9 +141,12 @@ def transcribe_audio(
             output_file: str = os.path.join(
                 output_dir, os.path.splitext(file)[0] + f".{extension}"
             )
-            if os.path.exists(output_file) and not force:
-                print(f"スキップされたファイル: {output_file}（既に存在します）")
-                continue
+            if os.path.exists(output_file):
+                if force:
+                    os.remove(output_file)
+                else:
+                    print(f"スキップされたファイル: {output_file}（既に存在します）")
+                    continue
             command = [
                 "python",
                 "scripts/speech_to_text.py",
