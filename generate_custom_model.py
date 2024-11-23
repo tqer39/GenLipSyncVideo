@@ -168,9 +168,11 @@ def main(args: Optional[Namespace] = None) -> None:
     separate_dir: str = os.path.join(raw_dir, "separate")
     normalize_dir: str = os.path.join(f"./data/{args.model_name}", "normalize_loudness")
     transcribe_dir: str = os.path.join(f"./data/{args.model_name}", "transcriptions")
+    finetune_dir: str = os.path.join(f"./data/{args.model_name}", "finetune")
     os.makedirs(separate_dir, exist_ok=True)
     os.makedirs(normalize_dir, exist_ok=True)
     os.makedirs(transcribe_dir, exist_ok=True)
+    os.makedirs(finetune_dir, exist_ok=True)
     normalize_flag_file: str = os.path.join(normalize_dir, ".normalized")
 
     if args.file_normalize_only:
@@ -237,6 +239,31 @@ def main(args: Optional[Namespace] = None) -> None:
         args.force_transcribe,
         args.whisper_model_name,
     )
+
+    # 処理継続の確認
+    while True:
+        user_input = input("処理を継続しますか？ (y/N): ").strip().lower()
+        if user_input == "y":
+            break
+        elif user_input == "n" or user_input == "":
+            print("処理を中断しました。")
+            sys.exit(0)
+
+    # finetune フォルダ内で処理を実行
+    command = [
+        "python",
+        "tools/vqgan/extract_vq.py",
+        finetune_dir,
+        "--num-workers",
+        "1",
+        "--batch-size",
+        "16",
+        "--config-name",
+        "firefly_gan_vq",
+        "--checkpoint-path",
+        f"checkpoints/fish-speech-1.4/firefly-gan-vq-fsq-8x1024-21hz-generator.pth",
+    ]
+    subprocess.run(command, check=True)
 
 
 if __name__ == "__main__":
