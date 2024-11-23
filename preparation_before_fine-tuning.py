@@ -151,13 +151,15 @@ def transcribe_audio(
                 else:
                     print(f"スキップされたファイル: {output_file}（既に存在します）")
                     continue
-            text: str = speech_to_text.speech_to_text(
-                os.path.join(input_dir, file), model_name
+            speech_to_text.main(
+                Namespace(
+                    input_dir=input_dir,
+                    output_dir=output_dir,
+                    extension=extension,
+                    whisper_model_name=model_name,
+                )
             )
-            with open(output_file, "w") as f:
-                f.write(text)
             print(f"テキストデータを保存しました: {output_file}")
-            print(f"テキストの内容: {text}")
 
 
 def main(args: Optional[Namespace] = None) -> None:
@@ -229,7 +231,7 @@ def main(args: Optional[Namespace] = None) -> None:
                 f.write("normalized")
         sys.exit(0)
 
-    # 音声ファイルからテキストデータの抽出のみを実行
+    # ���声ファイルからテキストデータの抽出のみを実行
     if args.file_transcribe_only:
         # 音声ファイルからテキストデータを抽出
         transcribe_audio(
@@ -290,7 +292,7 @@ def main(args: Optional[Namespace] = None) -> None:
             f.write("normalized")
             print("ラウドネス正規化を適用しました。")
 
-    # 音声ファイルからテキストデータを抽出
+    # 音声ファイ��からテキストデータを抽出
     transcribe_audio(
         normalize_dir,
         transcribe_dir,
