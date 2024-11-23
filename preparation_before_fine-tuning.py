@@ -169,6 +169,14 @@ def main(args: Optional[Namespace] = None) -> None:
     os.makedirs(finetune_dir, exist_ok=True)
     normalize_flag_file: str = os.path.join(normalize_dir, ".normalized")
 
+    # ファイルコピーのみを実行
+    if args.file_copy_only:
+        if args.copy_source_raw_directory is None:
+            print("コピー元のディレクトリが指定されていません。")
+            sys.exit(1)
+        create_and_copy_data.main(args)
+        sys.exit(0)
+
     # ファイル分割のみを実行
     if args.file_separate_only:
         for file in sorted(os.listdir(raw_dir)):
@@ -208,14 +216,11 @@ def main(args: Optional[Namespace] = None) -> None:
         )
         sys.exit(0)
 
-    if not args.file_separate_only:
-        if args.file_copy_only:
-            args.force = args.force_file_copy
+    # ファイルコピーから実行
+    if args.copy_source_raw_directory is not None:
         create_and_copy_data.main(args)
-    if args.file_copy_only:
-        sys.exit(0)
 
-    # separate.py を実行して音声データを分割
+    # ファイルを分割
     for file in sorted(os.listdir(raw_dir)):
         if file.endswith((".mp3", ".wav")):
             input_file: str = os.path.join(raw_dir, file)
@@ -229,11 +234,14 @@ def main(args: Optional[Namespace] = None) -> None:
             )
             separate.main(separate_args)
 
-    if not os.path.exists(normalize_flag_file):
-        # ラウドネス正規化を適用
+    # ラウドネス正規化を適用
+    if os.path.exists(normalize_flag_file) and not args.force_normalize_loudness:
+        print("ラウドネス正規化は既に適用されています。")
+    else:
         normalize_loudness(separate_dir, normalize_dir, args.loudness_target)
         with open(normalize_flag_file, "w") as f:
             f.write("normalized")
+            print("ラウドネス正規化を適用しました。")
 
     # 音声ファイルからテキストデータを抽出
     transcribe_audio(
@@ -243,24 +251,6 @@ def main(args: Optional[Namespace] = None) -> None:
         args.force_transcribe,
         args.whisper_model_name,
     )
-
-    # 処理継続の確認
-    while True:
-        user_input = (
-            input(
-                "処理を継続しますか？ (y/N): finetune フォルダに音声データとテキストデータのセットを保存してから y キーを押してください。"
-            )
-            .strip()
-            .lower()
-        )
-        if user_input == "y":
-            break
-        elif user_input == "n" or user_input == "":
-            print("処理を中断しました。")
-            sys.exit(0)
-
-    # finetune フォルダ内で処理を実行
-    prepare_finetune(finetune_dir)
 
 
 if __name__ == "__main__":
