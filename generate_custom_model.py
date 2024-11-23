@@ -68,11 +68,6 @@ def parse_arguments() -> argparse.ArgumentParser:
         help="[OPTION] 分割の重なり（秒）。デフォルトは 5 です。",
     )
     parser.add_argument(
-        "--force",
-        action="store_true",
-        help="[OPTION] 同名のファイルがある場合に強制的に上書きします。",
-    )
-    parser.add_argument(
         "--loudness-target",
         type=float,
         default=-23.0,
@@ -253,7 +248,7 @@ def main(args: Optional[Namespace] = None) -> None:
                 "--overlay",
                 str(args.overlay),
             ]
-            if args.force or args.file_separate_only:
+            if args.file_separate_only:
                 command.append("--force")
             subprocess.run(command)
 
