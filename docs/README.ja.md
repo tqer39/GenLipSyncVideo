@@ -21,14 +21,14 @@ bash setup
 
 ```bash
 python generate_custom_model.py --copy-source-raw-directory ./data/tmp \
-    --model-name model_name --file-copy-only --force
+    --model-name model_name --file-copy-only
 ```
 
 ### ファイルコピーと分割実行
 
 ```bash
 python generate_custom_model.py --copy-source-raw-directory ./data/tmp \
-    --model-name model_name --start 0 --term 30 --overlay 5 --force
+    --model-name model_name --start 0 --term 30 --overlay 5
 ```
 
 ### 音声データからテキストデータを生成（強制）
