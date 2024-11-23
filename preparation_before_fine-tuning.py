@@ -103,11 +103,6 @@ def parse_arguments() -> argparse.ArgumentParser:
         action="store_true",
         help="[OPTION] ラウドネス正規化を強制します。",
     )
-    parser.add_argument(
-        "--finetune-only",
-        action="store_true",
-        help="[OPTION] finetune の処理のみを実行します。",
-    )
     return parser
 
 
@@ -153,26 +148,6 @@ def transcribe_audio(
             print(f"テキストの内容: {text}")
 
 
-def prepare_finetune(finetune_dir: str) -> None:
-    """
-    finetune フォルダ内で処理を実行します。
-    """
-    command = [
-        "python",
-        "tools/vqgan/extract_vq.py",
-        finetune_dir,
-        "--num-workers",
-        "1",
-        "--batch-size",
-        "16",
-        "--config-name",
-        "firefly_gan_vq",
-        "--checkpoint-path",
-        "checkpoints/fish-speech-1.4/firefly-gan-vq-fsq-8x1024-21hz-generator.pth",
-    ]
-    subprocess.run(command, check=True)
-
-
 def main(args: Optional[Namespace] = None) -> None:
     """
     メイン関数。コマンドライン引数を解析し、音声ファイルのコピーと分割を実行します。
@@ -194,6 +169,23 @@ def main(args: Optional[Namespace] = None) -> None:
     os.makedirs(finetune_dir, exist_ok=True)
     normalize_flag_file: str = os.path.join(normalize_dir, ".normalized")
 
+    # ファイル分割のみを実行
+    if args.file_separate_only:
+        for file in sorted(os.listdir(raw_dir)):
+            if file.endswith((".mp3", ".wav")):
+                input_file: str = os.path.join(raw_dir, file)
+                separate_args = Namespace(
+                    input=input_file,
+                    output_dir=separate_dir,
+                    start=args.start,
+                    interval=args.term,
+                    overlay=args.overlay,
+                    force=args.file_separate_only,
+                )
+                separate.main(separate_args)
+        sys.exit(0)
+
+    # ファイル正規化のみを実行
     if args.file_normalize_only:
         if os.path.exists(normalize_flag_file) and not args.force_normalize_loudness:
             print("ラウドネス正規化は既に適用されています。")
@@ -204,6 +196,7 @@ def main(args: Optional[Namespace] = None) -> None:
                 f.write("normalized")
         sys.exit(0)
 
+    # 音声ファイルからテキストデータの抽出のみを実行
     if args.file_transcribe_only:
         # 音声ファイルからテキストデータを抽出
         transcribe_audio(
@@ -213,10 +206,6 @@ def main(args: Optional[Namespace] = None) -> None:
             args.force_transcribe,
             args.whisper_model_name,
         )
-        sys.exit(0)
-
-    if args.finetune_only:
-        prepare_finetune(finetune_dir)
         sys.exit(0)
 
     if not args.file_separate_only:
