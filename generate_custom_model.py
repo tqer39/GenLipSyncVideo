@@ -123,9 +123,8 @@ def normalize_loudness(input_dir: str, output_dir: str, loudness_target: float) 
         "loudness-norm",
         input_dir,
         output_dir,
-        "--overwrite",
-        "--loudness",
         "--clean",
+        "--loudness",
         str(loudness_target),
     ]
     subprocess.run(command, check=True)
