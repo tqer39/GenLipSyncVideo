@@ -230,8 +230,20 @@ def main(args: Optional[Namespace] = None) -> None:
         sys.exit(0)
 
     # ファイルコピーから実行
-    if args.copy_source_raw_directory is not None:
-        create_and_copy_data.main(args)
+    if args.copy_source_raw_directory is None:
+        print("コピー元のディレクトリが指定されていません。")
+        sys.exit(1)
+    if not os.path.isdir(args.copy_source_raw_directory):
+        print(f"指定されたディレクトリが存在しません: {args.copy_source_raw_directory}")
+        sys.exit(1)
+    if not any(
+        os.path.isfile(os.path.join(args.copy_source_raw_directory, f))
+        for f in os.listdir(args.copy_source_raw_directory)
+    ):
+        print(
+            f"指定されたディレクトリにファイルが存在しません: {args.copy_source_raw_directory}"
+        )
+        sys.exit(1)
 
     # ファイルを分割
     for file in sorted(os.listdir(raw_dir)):
