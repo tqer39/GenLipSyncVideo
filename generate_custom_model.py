@@ -96,6 +96,11 @@ def parse_arguments() -> argparse.ArgumentParser:
         action="store_true",
         help="[OPTION] ファイルコピーを強制します。",
     )
+    parser.add_argument(
+        "--force-file-separate",
+        action="store_true",
+        help="[OPTION] ファイル分割を強制します。",
+    )
     return parser
 
 
@@ -209,7 +214,7 @@ def main(args: Optional[Namespace] = None) -> None:
                 "--overlay",
                 str(args.overlay),
             ]
-            if args.force:
+            if args.force or args.file_separate_only:
                 command.append("--force")
             subprocess.run(command)
 
