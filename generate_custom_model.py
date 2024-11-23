@@ -154,6 +154,26 @@ def transcribe_audio(
             subprocess.run(command, check=True)
 
 
+def run_finetune_processing(finetune_dir: str) -> None:
+    """
+    finetune フォルダ内で処理を実行します。
+    """
+    command = [
+        "python",
+        "tools/vqgan/extract_vq.py",
+        finetune_dir,
+        "--num-workers",
+        "1",
+        "--batch-size",
+        "16",
+        "--config-name",
+        "firefly_gan_vq",
+        "--checkpoint-path",
+        f"checkpoints/fish-speech-1.4/firefly-gan-vq-fsq-8x1024-21hz-generator.pth",
+    ]
+    subprocess.run(command, check=True)
+
+
 def main(args: Optional[Namespace] = None) -> None:
     """
     メイン関数。コマンドライン引数を解析し、音声ファイルのコピーと分割を実行します。
@@ -256,20 +276,7 @@ def main(args: Optional[Namespace] = None) -> None:
             sys.exit(0)
 
     # finetune フォルダ内で処理を実行
-    command = [
-        "python",
-        "tools/vqgan/extract_vq.py",
-        finetune_dir,
-        "--num-workers",
-        "1",
-        "--batch-size",
-        "16",
-        "--config-name",
-        "firefly_gan_vq",
-        "--checkpoint-path",
-        f"checkpoints/fish-speech-1.4/firefly-gan-vq-fsq-8x1024-21hz-generator.pth",
-    ]
-    subprocess.run(command, check=True)
+    run_finetune_processing(finetune_dir)
 
 
 if __name__ == "__main__":
