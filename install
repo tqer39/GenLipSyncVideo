@@ -16,7 +16,7 @@ FS_REPO_URL="https://github.com/your-repo/fish-speech.git"  # fish-speech のリ
 # シンボリックリンク作成対象のファイル名リスト
 SYMLINK_FILES=(
   "setup"
-  "generate_custom_model.py"
+  "preparation_before_fine-tuning.py"
   "scripts/__init__.py"
   "scripts/create_and_copy_data.py"
   "scripts/separate.py"
