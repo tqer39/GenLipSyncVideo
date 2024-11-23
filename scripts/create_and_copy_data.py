@@ -5,6 +5,9 @@ from argparse import Namespace
 
 
 def parse_arguments() -> Namespace:
+    """
+    コマンドライン引数を解析します。
+    """
     parser = argparse.ArgumentParser(
         description="音声ファイルを指定のディレクトリにコピーします。"
     )
@@ -22,6 +25,9 @@ def parse_arguments() -> Namespace:
 
 
 def main(args=None):
+    """
+    メイン関数。音声ファイルを指定のディレクトリにコピーします。
+    """
     if args is None:
         args = parse_arguments()
 
