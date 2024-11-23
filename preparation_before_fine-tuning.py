@@ -120,7 +120,7 @@ def parse_arguments() -> argparse.ArgumentParser:
 
 def normalize_loudness(input_dir: str, output_dir: str, loudness_target: float) -> None:
     """
-    ディレク���リ内の音声ファイルにラウドネス正規化を適用します。
+    ディレクトリ内の音声ファイルにラウドネス正規化を適用します。
     """
     command = [
         "fap",
