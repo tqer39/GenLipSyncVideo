@@ -68,6 +68,21 @@ def build_dataset(input_dir: str, output_dir: str) -> None:
     subprocess.run(command, check=True)
 
 
+def train_model(project: str) -> None:
+    """
+    モデルをトレーニングします。
+    """
+    command = [
+        "python",
+        "fish_speech/train.py",
+        "--config-name",
+        "text2semantic_finetune",
+        f"project={project}",
+        "+lora@model.model.lora_config=r_8_alpha_16",
+    ]
+    subprocess.run(command, check=True)
+
+
 def main(args: Optional[Namespace] = None) -> None:
     """
     メイン関数。コマンドライン引数を解析し、fine tuning の処理を実行します。
@@ -75,10 +90,13 @@ def main(args: Optional[Namespace] = None) -> None:
     if args is None:
         args = parse_arguments()
 
-    target_dir = args.override_path or f"./data/{args.model_name}/before_text_reformatting"
+    target_dir = (
+        args.override_path or f"./data/{args.model_name}/before_text_reformatting"
+    )
     output_dir = f"./data/{args.model_name}/protobuf"
     finetune(target_dir)
     build_dataset(target_dir, output_dir)
+    train_model(args.model_name)
 
 
 if __name__ == "__main__":
