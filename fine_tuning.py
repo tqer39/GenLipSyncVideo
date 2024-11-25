@@ -48,6 +48,26 @@ def finetune(finetune_dir: str) -> None:
     subprocess.run(command, check=True)
 
 
+def build_dataset(input_dir: str, output_dir: str) -> None:
+    """
+    データセットを構築します。
+    """
+    os.makedirs(output_dir, exist_ok=True)
+    command = [
+        "python",
+        "tools/llama/build_dataset.py",
+        "--input",
+        input_dir,
+        "--output",
+        output_dir,
+        "--text-extension",
+        ".lab",
+        "--num-workers",
+        "16",
+    ]
+    subprocess.run(command, check=True)
+
+
 def main(args: Optional[Namespace] = None) -> None:
     """
     メイン関数。コマンドライン引数を解析し、fine tuning の処理を実行します。
@@ -56,7 +76,9 @@ def main(args: Optional[Namespace] = None) -> None:
         args = parse_arguments()
 
     target_dir = args.override_path or f"./data/{args.model_name}/before_text_reformatting"
+    output_dir = f"./data/{args.model_name}/protobuf"
     finetune(target_dir)
+    build_dataset(target_dir, output_dir)
 
 
 if __name__ == "__main__":
