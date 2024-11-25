@@ -14,7 +14,7 @@ def parse_arguments() -> argparse.Namespace:
         description="Fine-tuning script for GenLipSyncVideo"
     )
     parser.add_argument(
-        "--model_name", type=str, required=True, help="Name of the model to fine-tune"
+        "--model-name", type=str, required=True, help="Name of the model to fine-tune"
     )
     parser.add_argument(
         "--finetune-only",
