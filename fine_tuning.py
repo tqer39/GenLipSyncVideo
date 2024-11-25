@@ -50,21 +50,14 @@ def finetune(finetune_dir: str) -> None:
 
 def main(args: Optional[Namespace] = None) -> None:
     """
-    メイン関数。コマンドライン引数を解析し、音声ファイルのコピーと分割を実行します。
+    メイン関数。コマンドライン引数を解析し、fine tuning の処理を実行します。
     """
     if args is None:
         args = parse_arguments()
-    finetune_dir: str = os.path.join(
-        f"./data/{args.model_name}", "before_text_reformatting"
-    )
-    os.makedirs(finetune_dir, exist_ok=True)
 
-    if args.finetune_only:
-        finetune(finetune_dir)
-
-        sys.exit(0)
-
-    target_dir = (
-        args.override_path or f"./data/{args.model_name}/before_text_reformatting"
-    )
+    target_dir = args.override_path or f"./data/{args.model_name}/before_text_reformatting"
     finetune(target_dir)
+
+
+if __name__ == "__main__":
+    main()
