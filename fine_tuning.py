@@ -17,9 +17,19 @@ def parse_arguments() -> argparse.Namespace:
         "--model-name", type=str, required=True, help="Name of the model to fine-tune"
     )
     parser.add_argument(
-        "--finetune-only",
+        "--file-create-semantic-token-only",
         action="store_true",
-        help="[OPTION] finetune の処理のみを実行します。",
+        help="[OPTION] create_semantic_token の処理のみを実行します。",
+    )
+    parser.add_argument(
+        "--file-create-protobuf-only",
+        action="store_true",
+        help="[OPTION] create_protobuf の処理のみを実行します。",
+    )
+    parser.add_argument(
+        "--file-training-only",
+        action="store_true",
+        help="[OPTION] training の処理のみを実行します。",
     )
     parser.add_argument(
         "--override-path",
@@ -28,9 +38,9 @@ def parse_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def finetune(finetune_dir: str) -> None:
+def create_semantic_token(finetune_dir: str) -> None:
     """
-    finetune フォルダ内で処理を実行します。
+    create_semantic_token フォルダ内で処理を実行します。
     """
     command = [
         "python",
@@ -48,7 +58,7 @@ def finetune(finetune_dir: str) -> None:
     subprocess.run(command, check=True)
 
 
-def build_dataset(input_dir: str, output_dir: str) -> None:
+def create_protobuf(input_dir: str, output_dir: str) -> None:
     """
     データセットを構築します。
     """
@@ -68,7 +78,7 @@ def build_dataset(input_dir: str, output_dir: str) -> None:
     subprocess.run(command, check=True)
 
 
-def train_model(project: str) -> None:
+def training(project: str) -> None:
     """
     モデルをトレーニングします。
     """
@@ -94,9 +104,22 @@ def main(args: Optional[Namespace] = None) -> None:
         args.override_path or f"./data/{args.model_name}/before_text_reformatting"
     )
     output_dir = f"./data/{args.model_name}/protobuf"
-    finetune(target_dir)
-    build_dataset(target_dir, output_dir)
-    train_model(args.model_name)
+
+    if args.file_create_semantic_token_only:
+        create_semantic_token(target_dir)
+        sys.exit(0)
+
+    if args.file_create_protobuf_only:
+        create_protobuf(target_dir, output_dir)
+        sys.exit(0)
+
+    if args.file_training_only:
+        training(args.model_name)
+        sys.exit(0)
+
+    create_semantic_token(target_dir)
+    create_protobuf(target_dir, output_dir)
+    training(args.model_name)
 
 
 if __name__ == "__main__":
