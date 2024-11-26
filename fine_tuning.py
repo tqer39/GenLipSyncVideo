@@ -17,17 +17,17 @@ def parse_arguments() -> argparse.Namespace:
         "--model-name", type=str, required=True, help="Name of the model to fine-tune"
     )
     parser.add_argument(
-        "--file-create-semantic-token-only",
+        "--create-semantic-token-only",
         action="store_true",
         help="[OPTION] create_semantic_token の処理のみを実行します。",
     )
     parser.add_argument(
-        "--file-create-protobuf-only",
+        "--create-protobuf-only",
         action="store_true",
         help="[OPTION] create_protobuf の処理のみを実行します。",
     )
     parser.add_argument(
-        "--file-training-only",
+        "--training-only",
         action="store_true",
         help="[OPTION] training の処理のみを実行します。",
     )
@@ -105,15 +105,15 @@ def main(args: Optional[Namespace] = None) -> None:
     )
     output_dir = f"./data/{args.model_name}/protobuf"
 
-    if args.file_create_semantic_token_only:
+    if args.create_semantic_token_only:
         create_semantic_token(target_dir)
         sys.exit(0)
 
-    if args.file_create_protobuf_only:
+    if args.create_protobuf_only:
         create_protobuf(target_dir, output_dir)
         sys.exit(0)
 
-    if args.file_training_only:
+    if args.training_only:
         training(args.model_name)
         sys.exit(0)
 

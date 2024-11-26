@@ -1,7 +1,7 @@
 import scripts.create_and_copy_data as create_and_copy_data
 import scripts.separate as separate
-import scripts.speech_to_text as speech_to_text  # インポートを追加
-import scripts.prepare_before_text_reformatting as prepare_before_text_reformatting  # インポートを追加
+import scripts.speech_to_text as speech_to_text
+import scripts.prepare_before_text_reformatting as prepare_before_text_reformatting
 import sys
 import argparse
 import subprocess
@@ -29,22 +29,22 @@ def parse_arguments() -> argparse.ArgumentParser:
         help="[OPTION] 元になる音声ファイル（mp3, wav など）のパスを指定するディレクトリを指定します。",
     )
     parser.add_argument(
-        "--file-copy-only",
+        "--copy-only",
         action="store_true",
         help="[OPTION] ファイルコピーのみを実行します。",
     )
     parser.add_argument(
-        "--file-separate-only",
+        "--separate-only",
         action="store_true",
         help="[OPTION] ファイル分割のみを実行します。",
     )
     parser.add_argument(
-        "--file-normalize-only",
+        "--normalize-only",
         action="store_true",
         help="[OPTION] ファイル正規化のみを実行します。",
     )
     parser.add_argument(
-        "--file-transcribe-only",
+        "--transcribe-only",
         action="store_true",
         help="[OPTION] 音声ファイルからテキストデータを抽出するのみを実行します。",
     )
@@ -91,22 +91,22 @@ def parse_arguments() -> argparse.ArgumentParser:
         help="[OPTION] Whisper で使用するモデル。デフォルトは 'base' です。",
     )
     parser.add_argument(
-        "--force-file-copy",
+        "--force-copy",
         action="store_true",
         help="[OPTION] ファイルコピーを強制します。",
     )
     parser.add_argument(
-        "--force-file-separate",
+        "--force-separate",
         action="store_true",
         help="[OPTION] ファイル分割を強制します。",
     )
     parser.add_argument(
-        "--force-normalize-loudness",
+        "--force-normalize",
         action="store_true",
         help="[OPTION] ラウドネス正規化を強制します。",
     )
     parser.add_argument(
-        "--file-before-text-reformatting-only",
+        "--before-text-reformatting-only",
         action="store_true",
         help="[OPTION] before_text_reformatting のみを実行します。",
     )
@@ -184,7 +184,7 @@ def main(args: Optional[Namespace] = None) -> None:
     normalize_flag_file: str = os.path.join(normalize_dir, ".normalized")
 
     # ファイルコピーのみを実行
-    if args.file_copy_only:
+    if args.copy_only:
         if args.copy_source_raw_directory is None:
             print("コピー元のディレクトリが指定されていません。")
             sys.exit(1)
@@ -205,7 +205,7 @@ def main(args: Optional[Namespace] = None) -> None:
         sys.exit(0)
 
     # ファイル分割のみを実行
-    if args.file_separate_only:
+    if args.separate_only:
         for file in sorted(os.listdir(raw_dir)):
             if file.endswith((".mp3", ".wav")):
                 input_file: str = os.path.join(raw_dir, file)
@@ -215,14 +215,14 @@ def main(args: Optional[Namespace] = None) -> None:
                     start=args.start,
                     interval=args.term,
                     overlay=args.overlay,
-                    force=args.file_separate_only,
+                    force=args.separate_only,
                 )
                 separate.main(separate_args)
         sys.exit(0)
 
     # ファイル正規化のみを実行
-    if args.file_normalize_only:
-        if os.path.exists(normalize_flag_file) and not args.force_normalize_loudness:
+    if args.normalize_only:
+        if os.path.exists(normalize_flag_file) and not args.force_normalize:
             print("ラウドネス正規化は既に適用されています。")
         else:
             # ラウドネス正規化を適用
@@ -231,8 +231,8 @@ def main(args: Optional[Namespace] = None) -> None:
                 f.write("normalized")
         sys.exit(0)
 
-    # ���声ファイルからテキストデータの抽出のみを実行
-    if args.file_transcribe_only:
+    # 音声ファイルからテキストデータの抽出のみを実行
+    if args.transcribe_only:
         # 音声ファイルからテキストデータを抽出
         transcribe_audio(
             normalize_dir,
@@ -244,7 +244,7 @@ def main(args: Optional[Namespace] = None) -> None:
         sys.exit(0)
 
     # セマンティックトークンを払い出す前の前処理のみを実行
-    if args.file_before_text_reformatting_only:
+    if args.before_text_reformatting_only:
         prepare_before_text_reformatting.main(
             Namespace(
                 model_name=args.model_name,
@@ -279,12 +279,12 @@ def main(args: Optional[Namespace] = None) -> None:
                 start=args.start,
                 interval=args.term,
                 overlay=args.overlay,
-                force=args.file_separate_only,
+                force=args.separate_only,
             )
             separate.main(separate_args)
 
     # ラウドネス正規化を適用
-    if os.path.exists(normalize_flag_file) and not args.force_normalize_loudness:
+    if os.path.exists(normalize_flag_file) and not args.force_normalize:
         print("ラウドネス正規化は既に適用されています。")
     else:
         normalize_loudness(separate_dir, normalize_dir, args.loudness_target)
@@ -292,7 +292,7 @@ def main(args: Optional[Namespace] = None) -> None:
             f.write("normalized")
             print("ラウドネス正規化を適用しました。")
 
-    # 音声ファイ��からテキストデータを抽出
+    # 音声ファイルからテキストデータを抽出
     transcribe_audio(
         normalize_dir,
         transcribe_dir,
