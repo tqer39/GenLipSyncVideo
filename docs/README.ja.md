@@ -15,9 +15,10 @@ cd "$HOME/workspace/fish-speech"
 bash setup
 ```
 
-## サンプルデータを通常の使い方
+## 通常の使い方
 
 ```bash
+# good
 python preparation_before_fine_tuning.py --model-name model_name \
     --copy-source-raw-directory ./data/tmp
 ```
@@ -39,27 +40,109 @@ python preparation_before_fine_tuning.py --model-name model_name \
 ### ファイルコピーのみ実行
 
 ```bash
+# good
 python preparation_before_fine_tuning.py --copy-source-raw-directory ./data/tmp \
+    --model-name model_name --file-copy-only
+
+# bad: モデル指定がない場合はエラー
+python preparation_before_fine_tuning.py --copy-source-raw-directory ./data/tmp \
+    --file-copy-only
+
+# bad: コピー元のディレクトリを指定するオプションがない場合はエラー
+python preparation_before_fine_tuning.py \
+    --model-name model_name --file-copy-only
+
+# bad: コピー元のディレクトリが存在しない場合はエラー
+python preparation_before_fine_tuning.py --copy-source-raw-directory ./data/null \
+     --model-name model_name --file-copy-only
+
+# ファイルコピーのみ: コピー元のディレクトリが存在するが、ファイルが存在しない場合はエラー
+python preparation_before_fine_tuning.py --copy-source-raw-directory ./data/empty \
     --model-name model_name --file-copy-only
 ```
 
-### ファイルコピーと分割実行
+### ファイルコピーとファイル分割まで
 
 ```bash
+# good
 python preparation_before_fine_tuning.py --copy-source-raw-directory ./data/tmp \
-    --model-name model_name --start 0 --term 30 --overlay 5
+    --model-name model_name
+
+# good: 分割するファイルの位置を指定した場合。e.g. 00:05:00~00:05:20, 00:05:17~00:05:37, 00:05:34~00:05:54, ...
+python preparation_before_fine_tuning.py --copy-source-raw-directory ./data/tmp \
+    --model-name model_name --start 300 --term 20 --overlay 3
+
+# good: 分割するファイルの位置を指定した場合。e.g. 00:07:00~00:07:40, 00:07:37~00:08:17, 00:08:14~00:08:54, ...
+python preparation_before_fine_tuning.py --copy-source-raw-directory ./data/tmp \
+    --model-name model_name --start 420 --term 40 --overlay 10
 ```
 
-### 音声データからテキストデータを生成（強制）
+### ファイル分割のみ
 
 ```bash
-python preparation_before_fine_tuning.py --copy-source-raw-directory ./data/tmp \
-    --model-name model_name --file-transcribe-only --force-transcribe
+# good
+python preparation_before_fine_tuning.py --model-name model_name --file-separate-only
 ```
 
-### 音声データからテキストデータを生成（強制）（Whisper のモデルを指定）
+### ファイル正規化のみ
 
 ```bash
-python preparation_before_fine_tuning.py --copy-source-raw-directory ./data/tmp \
-    --model-name model_name --file-transcribe-only --force-transcribe --whisper-model-name small
+# good
+python preparation_before_fine_tuning.py --model-name model_name --file-normalize-only
+```
+
+### ファイル正規化のみ（上書き）
+
+```bash
+# good
+python preparation_before_fine_tuning.py --model-name model_name --file-normalize-only --force-normalize-loudness
+```
+
+### 音声データからテキストデータを生成するのみ
+
+```bash
+# good
+python preparation_before_fine_tuning.py --model-name model_name --file-transcribe-only
+```
+
+### 音声データからテキストデータを生成するのみ（上書き）
+
+```bash
+# good
+python preparation_before_fine_tuning.py --model-name model_name --file-transcribe-only --force-transcribe
+```
+
+### 音声データからテキストデータを生成するのみ（モデルを指定）
+
+```bash
+# good
+python preparation_before_fine_tuning.py --model-name model_name --file-transcribe-only --whisper-model-name whisper_model_name
+```
+
+### セマンティックトークンを生成する前処理のみ
+
+```bash
+# good
+python preparation_before_fine_tuning.py --model-name model_name --file-before-text-reformatting-only
+```
+
+### セマンティックトークンを生成する前処理のみ（上書き）
+
+```bash
+# good
+python preparation_before_fine_tuning.py --model-name model_name --file-before-text-reformatting-only --force-before-text-reformatting
+```
+
+### セマンティックトークンを生成するのみ
+
+```bash
+# good
+python fine_tuning.py --model-name model_name
+```
+
+### セマンティックトークンを生成する（パスを指定）
+
+```bash
+# good
+python fine_tuning.py --model-name model_name --override-path ./data/model_name/before_text_reformatting/00001_00-00-00~00-00-30_test
 ```
