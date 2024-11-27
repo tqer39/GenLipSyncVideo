@@ -32,16 +32,27 @@ def parse_arguments() -> argparse.Namespace:
         help="[OPTION] training の処理のみを実行します。",
     )
     parser.add_argument(
+        "--force-create-semantic-token",
+        action="store_true",
+        help="[OPTION] 既存の npy ファイルがある場合に強制的に上書きします。",
+    )
+    parser.add_argument(
         "--override-path",
         help="[OPTION] 処理対象のディレクトリを指定します。デフォルトは './data/{model_name}/before_text_reformatting' です。",
     )
     return parser.parse_args()
 
 
-def create_semantic_token(finetune_dir: str) -> None:
+def create_semantic_token(finetune_dir: str, force: bool) -> None:
     """
     create_semantic_token フォルダ内で処理を実行します。
     """
+    if force:
+        for file in os.listdir(finetune_dir):
+            if file.endswith(".npy"):
+                os.remove(os.path.join(finetune_dir, file))
+                print(f"削除されたファイル: {file}")
+
     command = [
         "python",
         "tools/vqgan/extract_vq.py",
@@ -105,19 +116,23 @@ def main(args: Optional[Namespace] = None) -> None:
     )
     output_dir = f"./data/{args.model_name}/protobuf"
 
+    # セマンティックトークンの作成のみを実行
     if args.create_semantic_token_only:
-        create_semantic_token(target_dir)
+        create_semantic_token(target_dir, args.force_create_semantic_token)
         sys.exit(0)
 
+    # protobuf の作成のみを実行
     if args.create_protobuf_only:
         create_protobuf(target_dir, output_dir)
         sys.exit(0)
 
+    # training のみを実行
     if args.training_only:
         training(args.model_name)
         sys.exit(0)
 
-    create_semantic_token(target_dir)
+    # すべての処理を実行
+    create_semantic_token(target_dir, args.force_create_semantic_token)
     create_protobuf(target_dir, output_dir)
     training(args.model_name)
 
