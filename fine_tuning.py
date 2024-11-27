@@ -37,6 +37,11 @@ def parse_arguments() -> argparse.Namespace:
         help="[OPTION] 既存の npy ファイルがある場合に強制的に上書きします。",
     )
     parser.add_argument(
+        "--force-create-protobuf",
+        action="store_true",
+        help="[OPTION] 既存の protos ファイルがある場合に強制的に上書きします。",
+    )
+    parser.add_argument(
         "--override-path",
         help="[OPTION] 処理対象のディレクトリを指定します。デフォルトは './data/{model_name}/before_text_reformatting' です。",
     )
@@ -69,10 +74,16 @@ def create_semantic_token(finetune_dir: str, force: bool) -> None:
     subprocess.run(command, check=True)
 
 
-def create_protobuf(input_dir: str, output_dir: str) -> None:
+def create_protobuf(input_dir: str, output_dir: str, force: bool) -> None:
     """
     データセットを構築します。
     """
+    if force:
+        for file in os.listdir(output_dir):
+            if file.endswith(".protos"):
+                os.remove(os.path.join(output_dir, file))
+                print(f"削除されたファイル: {file}")
+
     os.makedirs(output_dir, exist_ok=True)
     command = [
         "python",
@@ -123,7 +134,7 @@ def main(args: Optional[Namespace] = None) -> None:
 
     # protobuf の作成のみを実行
     if args.create_protobuf_only:
-        create_protobuf(target_dir, output_dir)
+        create_protobuf(target_dir, output_dir, args.force_create_protobuf)
         sys.exit(0)
 
     # training のみを実行
@@ -133,7 +144,7 @@ def main(args: Optional[Namespace] = None) -> None:
 
     # すべての処理を実行
     create_semantic_token(target_dir, args.force_create_semantic_token)
-    create_protobuf(target_dir, output_dir)
+    create_protobuf(target_dir, output_dir, args.force_create_protobuf)
     training(args.model_name)
 
 
