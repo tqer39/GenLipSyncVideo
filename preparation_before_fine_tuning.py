@@ -1,12 +1,14 @@
 import scripts.create_and_copy_data as create_and_copy_data
 import scripts.separate as separate
-import scripts.speech_to_text as speech_to_text  # インポートを追加
+import scripts.speech_to_text as speech_to_text
+import scripts.prepare_before_text_reformatting as prepare_before_text_reformatting
 import sys
 import argparse
 import subprocess
 import os
 from argparse import Namespace
 from typing import Optional
+import shutil
 
 
 def parse_arguments() -> argparse.ArgumentParser:
@@ -27,22 +29,22 @@ def parse_arguments() -> argparse.ArgumentParser:
         help="[OPTION] 元になる音声ファイル（mp3, wav など）のパスを指定するディレクトリを指定します。",
     )
     parser.add_argument(
-        "--file-copy-only",
+        "--copy-only",
         action="store_true",
         help="[OPTION] ファイルコピーのみを実行します。",
     )
     parser.add_argument(
-        "--file-separate-only",
+        "--separate-only",
         action="store_true",
         help="[OPTION] ファイル分割のみを実行します。",
     )
     parser.add_argument(
-        "--file-normalize-only",
+        "--normalize-only",
         action="store_true",
         help="[OPTION] ファイル正規化のみを実行します。",
     )
     parser.add_argument(
-        "--file-transcribe-only",
+        "--transcribe-only",
         action="store_true",
         help="[OPTION] 音声ファイルからテキストデータを抽出するのみを実行します。",
     )
@@ -89,19 +91,29 @@ def parse_arguments() -> argparse.ArgumentParser:
         help="[OPTION] Whisper で使用するモデル。デフォルトは 'base' です。",
     )
     parser.add_argument(
-        "--force-file-copy",
+        "--force-copy",
         action="store_true",
         help="[OPTION] ファイルコピーを強制します。",
     )
     parser.add_argument(
-        "--force-file-separate",
+        "--force-separate",
         action="store_true",
         help="[OPTION] ファイル分割を強制します。",
     )
     parser.add_argument(
-        "--force-normalize-loudness",
+        "--force-normalize",
         action="store_true",
         help="[OPTION] ラウドネス正規化を強制します。",
+    )
+    parser.add_argument(
+        "--before-text-reformatting-only",
+        action="store_true",
+        help="[OPTION] before_text_reformatting のみを実行します。",
+    )
+    parser.add_argument(
+        "--force-before-text-reformatting",
+        action="store_true",
+        help="[OPTION] before_text_reformatting を強制します。",
     )
     return parser
 
@@ -139,13 +151,15 @@ def transcribe_audio(
                 else:
                     print(f"スキップされたファイル: {output_file}（既に存在します）")
                     continue
-            text: str = speech_to_text.speech_to_text(
-                os.path.join(input_dir, file), model_name
+            speech_to_text.main(
+                Namespace(
+                    input_dir=input_dir,
+                    output_dir=output_dir,
+                    extension=extension,
+                    whisper_model_name=model_name,
+                )
             )
-            with open(output_file, "w") as f:
-                f.write(text)
             print(f"テキストデータを保存しました: {output_file}")
-            print(f"テキストの内容: {text}")
 
 
 def main(args: Optional[Namespace] = None) -> None:
@@ -170,15 +184,28 @@ def main(args: Optional[Namespace] = None) -> None:
     normalize_flag_file: str = os.path.join(normalize_dir, ".normalized")
 
     # ファイルコピーのみを実行
-    if args.file_copy_only:
+    if args.copy_only:
         if args.copy_source_raw_directory is None:
             print("コピー元のディレクトリが指定されていません。")
+            sys.exit(1)
+        if not os.path.isdir(args.copy_source_raw_directory):
+            print(
+                f"指定されたディレクトリが存在しません: {args.copy_source_raw_directory}"
+            )
+            sys.exit(1)
+        if not any(
+            os.path.isfile(os.path.join(args.copy_source_raw_directory, f))
+            for f in os.listdir(args.copy_source_raw_directory)
+        ):
+            print(
+                f"指定されたディレクトリにファイルが存在しません: {args.copy_source_raw_directory}"
+            )
             sys.exit(1)
         create_and_copy_data.main(args)
         sys.exit(0)
 
     # ファイル分割のみを実行
-    if args.file_separate_only:
+    if args.separate_only:
         for file in sorted(os.listdir(raw_dir)):
             if file.endswith((".mp3", ".wav")):
                 input_file: str = os.path.join(raw_dir, file)
@@ -188,14 +215,14 @@ def main(args: Optional[Namespace] = None) -> None:
                     start=args.start,
                     interval=args.term,
                     overlay=args.overlay,
-                    force=args.file_separate_only,
+                    force=args.separate_only,
                 )
                 separate.main(separate_args)
         sys.exit(0)
 
     # ファイル正規化のみを実行
-    if args.file_normalize_only:
-        if os.path.exists(normalize_flag_file) and not args.force_normalize_loudness:
+    if args.normalize_only:
+        if os.path.exists(normalize_flag_file) and not args.force_normalize:
             print("ラウドネス正規化は既に適用されています。")
         else:
             # ラウドネス正規化を適用
@@ -205,7 +232,7 @@ def main(args: Optional[Namespace] = None) -> None:
         sys.exit(0)
 
     # 音声ファイルからテキストデータの抽出のみを実行
-    if args.file_transcribe_only:
+    if args.transcribe_only:
         # 音声ファイルからテキストデータを抽出
         transcribe_audio(
             normalize_dir,
@@ -216,25 +243,48 @@ def main(args: Optional[Namespace] = None) -> None:
         )
         sys.exit(0)
 
+    # セマンティックトークンを払い出す前の前処理のみを実行
+    if args.before_text_reformatting_only:
+        prepare_before_text_reformatting.main(
+            Namespace(
+                model_name=args.model_name,
+                force_before_text_reformatting=args.force_before_text_reformatting,
+            )
+        )
+        sys.exit(0)
+
     # ファイルコピーから実行
-    if args.copy_source_raw_directory is not None:
-        create_and_copy_data.main(args)
+    if args.copy_source_raw_directory is None:
+        print("コピー元のディレクトリが指定されていません。")
+        sys.exit(1)
+    if not os.path.isdir(args.copy_source_raw_directory):
+        print(f"指定されたディレクトリが存在しません: {args.copy_source_raw_directory}")
+        sys.exit(1)
+    if not any(
+        os.path.isfile(os.path.join(args.copy_source_raw_directory, f))
+        for f in os.listdir(args.copy_source_raw_directory)
+    ):
+        print(
+            f"指定されたディレクトリにファイルが存在しません: {args.copy_source_raw_directory}"
+        )
+        sys.exit(1)
 
     # ファイルを分割
     for file in sorted(os.listdir(raw_dir)):
         if file.endswith((".mp3", ".wav")):
+            input_file2: str = os.path.join(raw_dir, file)
             separate_args = Namespace(
-                input=input_file,
+                input=input_file2,
                 output_dir=separate_dir,
                 start=args.start,
                 interval=args.term,
                 overlay=args.overlay,
-                force=args.file_separate_only,
+                force=args.separate_only,
             )
             separate.main(separate_args)
 
     # ラウドネス正規化を適用
-    if os.path.exists(normalize_flag_file) and not args.force_normalize_loudness:
+    if os.path.exists(normalize_flag_file) and not args.force_normalize:
         print("ラウドネス正規化は既に適用されています。")
     else:
         normalize_loudness(separate_dir, normalize_dir, args.loudness_target)
@@ -249,6 +299,14 @@ def main(args: Optional[Namespace] = None) -> None:
         args.transcription_extension,
         args.force_transcribe,
         args.whisper_model_name,
+    )
+
+    # before_text_reformatting の準備
+    prepare_before_text_reformatting.main(
+        Namespace(
+            model_name=args.model_name,
+            force_before_text_reformatting=args.force_before_text_reformatting,
+        )
     )
 
 

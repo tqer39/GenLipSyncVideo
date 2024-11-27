@@ -23,6 +23,7 @@
     "nokey",
     "noprint",
     "portaudio",
+    "protos",
     "pydub",
     "pyenv",
     "shellcheck",
