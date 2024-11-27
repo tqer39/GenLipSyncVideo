@@ -2,28 +2,29 @@
 
 ## インストール
 
-```bash
+```shell
 git clone https://github.com/GenLipSyncVideo
 cd ./GenLipSyncVideo
-bash install
+shell install
 ```
 
 ## セットアップ
 
-```bash
+```shell
 cd "$HOME/workspace/fish-speech"
-bash setup
+shell setup
 ```
 
-## 通常の使い方
+## 1. 前処理
 
-```bash
-# good
+セマンティックトークンを生成ために必要なデータの前処理まで行います。
+
+```shell
 python preparation_before_fine_tuning.py --model-name model_name \
     --copy-source-raw-directory ./data/tmp
 ```
 
-### 何が実行されるのか
+何が実行されるのか？
 
 1. `--model-name` で指定されたモデル名が `data` フォルダ配下に作成され、ディレクトリ（`./data/${--model-name}`）を作成します。
 2. `--copy-source-raw-directory` オプションで指定されたディレクトリ（`./data/tmp`）にある音声データファイル（`*.wav`, `*.mp3`）を `./data/${--model-name}/raw` にコピーします。
@@ -37,10 +38,11 @@ python preparation_before_fine_tuning.py --model-name model_name \
    1. 保存先: `./data/${--model-name}/transcriptions/${分割後ファイル名_NNNNN}.lab`
    2. 文字起こしのときのモデルは `--whisper-model-name` で指定できます。デフォルトは `base` です。
 
-### ファイルコピーのみ実行
+以下は前処理を個別に実施していくオプションの例です。
 
-```bash
-# good
+### 1.1. ファイルコピーのみ実行
+
+```shell
 python preparation_before_fine_tuning.py --copy-source-raw-directory ./data/tmp \
     --model-name model_name --file-copy-only
 
@@ -61,88 +63,108 @@ python preparation_before_fine_tuning.py --copy-source-raw-directory ./data/empt
     --model-name model_name --file-copy-only
 ```
 
-### ファイルコピーとファイル分割まで
+### 1.2. ファイルコピーとファイル分割まで
 
-```bash
-# good
+```shell
 python preparation_before_fine_tuning.py --copy-source-raw-directory ./data/tmp \
     --model-name model_name
 
-# good: 分割するファイルの位置を指定した場合。e.g. 00:05:00~00:05:20, 00:05:17~00:05:37, 00:05:34~00:05:54, ...
+: 分割するファイルの位置を指定した場合。e.g. 00:05:00~00:05:20, 00:05:17~00:05:37, 00:05:34~00:05:54, ...
 python preparation_before_fine_tuning.py --copy-source-raw-directory ./data/tmp \
     --model-name model_name --start 300 --term 20 --overlay 3
 
-# good: 分割するファイルの位置を指定した場合。e.g. 00:07:00~00:07:40, 00:07:37~00:08:17, 00:08:14~00:08:54, ...
+: 分割するファイルの位置を指定した場合。e.g. 00:07:00~00:07:40, 00:07:37~00:08:17, 00:08:14~00:08:54, ...
 python preparation_before_fine_tuning.py --copy-source-raw-directory ./data/tmp \
     --model-name model_name --start 420 --term 40 --overlay 10
 ```
 
-### ファイル分割のみ
+### 1.3. ファイル分割のみ
 
-```bash
-# good
+```shell
 python preparation_before_fine_tuning.py --model-name model_name --file-separate-only
 ```
 
-### ファイル正規化のみ
+### 1.4.1. ファイル正規化のみ
 
-```bash
-# good
+```shell
 python preparation_before_fine_tuning.py --model-name model_name --file-normalize-only
 ```
 
-### ファイル正規化のみ（上書き）
+### 1.4.2. ファイル正規化のみ（上書き）
 
-```bash
-# good
+```shell
 python preparation_before_fine_tuning.py --model-name model_name --file-normalize-only --force-normalize-loudness
 ```
 
-### 音声データからテキストデータを生成するのみ
+### 1.5.1. 音声データからテキストデータを生成するのみ
 
-```bash
-# good
+```shell
 python preparation_before_fine_tuning.py --model-name model_name --file-transcribe-only
 ```
 
-### 音声データからテキストデータを生成するのみ（上書き）
+### 1.5.2. 音声データからテキストデータを生成するのみ（上書き）
 
-```bash
-# good
+```shell
 python preparation_before_fine_tuning.py --model-name model_name --file-transcribe-only --force-transcribe
 ```
 
-### 音声データからテキストデータを生成するのみ（モデルを指定）
+### 1.5.3. 音声データからテキストデータを生成するのみ（モデルを指定）
 
-```bash
-# good
+```shell
 python preparation_before_fine_tuning.py --model-name model_name --file-transcribe-only --whisper-model-name whisper_model_name
 ```
 
-### セマンティックトークンを生成する前処理のみ
+### 1.6.1. セマンティックトークンを生成する前処理のみ
 
-```bash
-# good
+```shell
 python preparation_before_fine_tuning.py --model-name model_name --file-before-text-reformatting-only
 ```
 
-### セマンティックトークンを生成する前処理のみ（上書き）
+### 1.6.2. セマンティックトークンを生成する前処理のみ（上書き）
 
-```bash
-# good
+```shell
 python preparation_before_fine_tuning.py --model-name model_name --file-before-text-reformatting-only --force-before-text-reformatting
 ```
 
-### セマンティックトークンを生成するのみ
+## 2. ファインチューニング
 
-```bash
-# good
+基本このコマンドでファインチューニングは完了します。前処理で準備したデータを元に、指定されたモデルをファインチューニングします。
+
+```shell
 python fine_tuning.py --model-name model_name
+
+# パスを上書きする場合
+python fine_tuning.py --model-name model_name --overwrite-path ./data/tmp2
 ```
 
-### セマンティックトークンを生成する（パスを指定）
+以下は前処理を個別に実施していくオプションの例です。
 
-```bash
-# good
-python fine_tuning.py --model-name model_name --override-path ./data/model_name/before_text_reformatting/00001_00-00-00~00-00-30_test
+### 2.1.1. セマンティックトークンを生成するのみ
+
+```shell
+python fine_tuning.py --model-name model_name --create-semantic-token-only
+```
+
+### 2.1.2. セマンティックトークンを生成するのみ（上書き）
+
+```shell
+python fine_tuning.py --model-name model_name --create-semantic-token-only --force-create-semantic-token
+```
+
+### 2.2.1. protobuf ファイルを生成するのみ
+
+```shell
+python fine_tuning.py --model-name model_name --create-protobuf-only
+```
+
+### 2.2.2. protobuf ファイルを生成するのみ（上書き）
+
+```shell
+python fine_tuning.py --model-name model_name --create-protobuf-only --force-create-protobuf
+```
+
+### 2.3. モデルをトレーニングするのみ
+
+```shell
+python fine_tuning.py --model-name model_name --training-only
 ```
