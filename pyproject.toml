@@ -8,6 +8,6 @@ requires-python = ">=3.10.0"
 [dependency-groups]
 dev = [
     "torch==2.4.1",
-    "torchaudio==2.4.1",
+    "torchaudio==2.5.1",
     "torchvision==0.19.1",
 ]
